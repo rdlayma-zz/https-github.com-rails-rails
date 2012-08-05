@@ -41,6 +41,7 @@ module ActionDispatch
 
         if conditions = options.delete(:conditions)
           conditions = conditions.dup
+          subdomain = conditions.delete(:subdomain)
           method = [conditions.delete(:method)].flatten.compact
           method.map! { |m|
             m = m.to_s.upcase
@@ -123,6 +124,7 @@ module ActionDispatch
         conditions = {}
         conditions[:request_method] = method if method
         conditions[:path_info] = path if path
+        conditions[:subdomain] = subdomain if subdomain
 
         @set.add_route(app, conditions, requirements, defaults, name)
       end
