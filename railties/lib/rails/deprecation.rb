@@ -13,6 +13,7 @@ module Rails
   class DeprecatedConstant < ActiveSupport::BasicObject
     def self.deprecate(old, new)
       constant = self.new(old, new)
+      Object.send(:remove_const, old) rescue nil
       eval "::#{old} = constant"
     end
 
