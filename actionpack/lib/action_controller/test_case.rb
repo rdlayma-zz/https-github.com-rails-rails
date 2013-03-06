@@ -99,11 +99,11 @@ module ActionController
           elsif options.key?(:layout)
             msg = build_message(message,
                     "expecting layout <?> but action rendered <?>",
-                    expected_layout, @layouts.keys)
+                    options[:layout], @layouts.keys)
 
             case layout = options[:layout]
             when String
-              assert(@layouts.include?(expected_layout), msg)
+              assert(@layouts.include?(layout), msg)
             when Regexp
               assert(@layouts.any? {|l| l =~ layout }, msg)
             when nil
