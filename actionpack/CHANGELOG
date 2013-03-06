@@ -1,3 +1,30 @@
+## Rails 3.0.20 (unreleased)
+
+* Fixed JSON params parsing regression for non-object JSON content.
+
+## Rails 3.0.19 (Jan 8, 2013)
+
+* Strip nils from collections on JSON and XML posts. [CVE-2013-0155]
+
+## Rails 3.0.18 (Jan 2, 2013)
+
+* No changes.
+
+## Rails 3.0.17 (Aug 9, 2012)
+
+* There is an XSS vulnerability in the strip_tags helper in Ruby on Rails, the
+  helper doesn't correctly handle malformed html.  As a result an attacker can
+  execute arbitrary javascript through the use of specially crafted malformed
+  html.
+
+  *Marek from Nethemba (www.nethemba.com) & Santiago Pastorino*
+
+* When an "include_blank" value is supplied to the `select_tag` helper, the "include_blank" value is not escaped.  If untrusted data is not escaped, and is supplied as the prompt value, there is a potential for XSS attacks.
+  Vulnerable code will look something like this:
+    select_tag("name", options, :include_blank => UNTRUSTED_INPUT)
+
+  *Santiago Pastorino*
+
 ## Rails 3.0.16 (Jul 26, 2012)
 
 * Do not convert digest auth strings to symbols. CVE-2012-3424

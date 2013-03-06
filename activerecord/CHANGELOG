@@ -1,14 +1,41 @@
+## unreleased ##
+
+* Revert 'quote numeric values being compared to non-numeric columns.' This
+  caused a bunch of regressions.
+
+## Rails 3.0.21
+
+* Quote numeric values being compared to non-numeric columns. Otherwise,
+	in some database, the string column values will be coerced to a numeric
+	allowing 0, 0.0 or false to match any string starting with a non-digit.
+
+  Example:
+
+    App.where(apikey: 0) # => SELECT * FROM users WHERE apikey = '0'
+
+## Rails 3.0.19 (Jan 8, 2013)
+
+* Fix querying with an empty hash *Damien Mathieu* [CVE-2013-0155]
+
+## Rails 3.0.18 (Jan 2, 2013)
+
+* CVE-2012-5664 ensure that options are never taken from the first parameter
+
+## Rails 3.0.17 (Aug 9, 2012)
+
+* Fix type_to_sql with text and limit on mysql/mysql2 (GH #7252)
+
 ## Rails 3.0.16 (Jul 26, 2012)
 
-*   No changes.
+* No changes.
 
 ## Rails 3.0.14 (Jun 12, 2012)
 
-*   protect against the nesting of hashes changing the
-    table context in the next call to build_from_hash. This fix
-    covers this case as well.
+* protect against the nesting of hashes changing the
+  table context in the next call to build_from_hash. This fix
+  covers this case as well.
 
-    CVE-2012-2695
+  CVE-2012-2695
 
 * Rails 3.0.13 (May 31, 2012)
 

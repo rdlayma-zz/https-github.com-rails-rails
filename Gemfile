@@ -3,7 +3,7 @@ source 'http://rubygems.org'
 gemspec
 
 gem "rake",  ">= 0.8.7"
-gem "mocha", "0.10.5"
+gem 'mocha', '>= 0.13.0', :require => false
 
 group :doc do
   gem "rdoc",  "~> 3.4"
@@ -41,7 +41,7 @@ platforms :ruby do
   group :db do
     gem "pg", ">= 0.9.0"
     gem "mysql", ">= 2.8.1"
-    gem "mysql2", "~> 0.2.17"
+    gem "mysql2", :git => "git://github.com/brianmario/mysql2.git", :branch => "0.2.x"
   end
 end
 
