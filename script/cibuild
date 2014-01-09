@@ -4,4 +4,4 @@ set -x
 set -e
 
 script/cibuild-on 1.9.3-p231-tcs-github
-script/cibuild-on 2.0.0-github
+script/cibuild-on 2.1.0-github
