@@ -624,7 +624,7 @@ class FragmentCachingTest < ActionController::TestCase
 
   def test_fragment_for_bytesize
     buffer = "\xC4\x8D"
-    assert_equal Encoding::ASCII_8BIT, buffer.encoding
+    buffer.force_encoding('ASCII-8BIT')
 
     @controller.fragment_for(buffer, 'bytesize') do
       buffer.force_encoding('UTF-8')
