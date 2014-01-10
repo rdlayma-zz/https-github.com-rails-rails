@@ -152,7 +152,7 @@ module ActiveRecord
       end
 
       def send(method, *args)
-        if proxy_respond_to?(method)
+        if proxy_respond_to?(method, true)
           super
         else
           load_target
