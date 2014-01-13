@@ -175,6 +175,10 @@ class FormHelperTest < ActionView::TestCase
     I18n.locale = old_locale
   end
 
+  def test_label_with_for_attribute_as_nil
+    assert_dom_equal('<label>Title</label>', label(:post, :title, nil, :for => nil))
+  end
+
   def test_label_with_for_attribute_as_symbol
     assert_dom_equal('<label for="my_for">Title</label>', label(:post, :title, nil, :for => "my_for"))
   end
@@ -272,6 +276,11 @@ class FormHelperTest < ActionView::TestCase
   def test_text_field_with_options
     assert_dom_equal '<input id="post_title" name="post[title]" type="hidden" value="Something Else" />',
       hidden_field("post", "title", :value => "Something Else")
+  end
+
+  def test_text_field_with_id_as_nil
+    assert_dom_equal '<input name="post[title]" type="hidden" value="Hello World" />',
+      hidden_field("post", "title", :id => nil)
   end
 
   def test_check_box
