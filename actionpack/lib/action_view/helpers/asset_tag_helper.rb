@@ -746,7 +746,7 @@ module ActionView
           source = rewrite_asset_path(source, config.asset_path)
 
           has_request = controller.respond_to?(:request)
-          if has_request && include_host && !source.start_with?(controller.config.relative_url_root)
+          if has_request && include_host && controller.config.relative_url_root && !source.start_with?(controller.config.relative_url_root)
             source = "#{controller.config.relative_url_root}#{source}"
           end
           source = rewrite_host_and_protocol(source, has_request) if include_host
