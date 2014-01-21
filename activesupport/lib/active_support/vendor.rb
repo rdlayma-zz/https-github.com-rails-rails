@@ -16,11 +16,6 @@ end
 
 $:.unshift "#{File.dirname(__FILE__)}/vendor/tzinfo-0.3.12"
 
-begin
-  gem 'i18n', '>= 0.4.1'
-rescue Gem::LoadError
-  $:.unshift "#{File.dirname(__FILE__)}/vendor/i18n-0.4.1"
-end
 require 'i18n'
 
 module I18n
