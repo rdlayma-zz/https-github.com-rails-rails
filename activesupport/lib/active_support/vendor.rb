@@ -1,11 +1,6 @@
 # Prefer gems to the bundled libs.
 require 'rubygems'
 
-begin
-  gem 'builder', '~> 2.1.2'
-rescue Gem::LoadError
-  $:.unshift "#{File.dirname(__FILE__)}/vendor/builder-2.1.2"
-end
 require 'builder'
 
 begin
