@@ -280,7 +280,7 @@ module ActiveRecord
     def committed! #:nodoc:
       run_callbacks :commit
     ensure
-      clear_transaction_record_state
+      @_start_transaction_state.clear
     end
 
     # Call the after rollback callbacks. The restore_state argument indicates if the record
