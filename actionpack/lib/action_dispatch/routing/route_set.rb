@@ -504,7 +504,7 @@ module ActionDispatch
         path = Rack::Mount::Utils.normalize_path(path) unless path =~ %r{://}
 
         begin
-          env = Rack::MockRequest.env_for(path, {:method => method})
+          env = Rack::MockRequest.env_for(path, {:method => method, :params => environment[:extras]})
         rescue URI::InvalidURIError => e
           raise ActionController::RoutingError, e.message
         end
