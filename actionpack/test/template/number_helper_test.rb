@@ -3,6 +3,12 @@ require 'abstract_unit'
 class NumberHelperTest < ActionView::TestCase
   tests ActionView::Helpers::NumberHelper
 
+  def test_number_helpers_escape_delimiter_and_separator
+    assert_equal "$1&lt;script&gt;&lt;/script&gt;01", number_to_currency(1.01, :separator => "<script></script>")
+    assert_equal "$1&lt;script&gt;&lt;/script&gt;000.00", number_to_currency(1000, :delimiter => "<script></script>")
+    assert_equal "&lt;script&gt;1,000.00$&lt;/script&gt;", number_to_currency(1000, :format => "<script>%n%u</script>")
+  end
+
   def test_number_to_phone
     assert_equal("555-1234", number_to_phone(5551234))
     assert_equal("800-555-1212", number_to_phone(8005551212))
