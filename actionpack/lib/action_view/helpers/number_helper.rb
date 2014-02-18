@@ -73,6 +73,8 @@ module ActionView
       def number_to_currency(number, options = {})
         options.symbolize_keys!
 
+        options[:format]    = ERB::Util.html_escape(options[:format]) if options[:format]
+
         defaults  = I18n.translate(:'number.format', :locale => options[:locale], :raise => true) rescue {}
         currency  = I18n.translate(:'number.currency.format', :locale => options[:locale], :raise => true) rescue {}
         defaults  = defaults.merge(currency)
