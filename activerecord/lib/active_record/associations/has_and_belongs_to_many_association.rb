@@ -71,7 +71,7 @@ module ActiveRecord
                   @owner.send(:quote_value, record[name], column) if record.has_attribute?(name)
               end
               [relation[name], value] unless value.nil?
-            end]
+            end.compact]
 
             relation.insert(attributes)
           end
