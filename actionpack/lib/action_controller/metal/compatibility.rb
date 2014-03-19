@@ -60,7 +60,7 @@ module ActionController
     end
 
     def method_for_action(action_name)
-      super || (respond_to?(:method_missing) && "_handle_method_missing")
+      super || (defined?(self.method_missing) && "_handle_method_missing")
     end
 
     def performed?
