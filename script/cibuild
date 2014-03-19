@@ -1,0 +1,7 @@
+#!/bin/bash -xe
+
+export PATH="/usr/share/rbenv/versions/2.1.0-github/bin:$PATH"
+
+bundle --local --path vendor/gems/
+
+bundle exec rake test
