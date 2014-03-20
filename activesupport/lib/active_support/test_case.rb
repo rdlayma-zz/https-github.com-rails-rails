@@ -7,18 +7,6 @@ require 'active_support/testing/pending'
 require 'active_support/testing/isolation'
 require 'active_support/core_ext/kernel/reporting'
 
-class Object
-  alias_method :__respond_to?, :respond_to?
-
-  def respond_to?(mid, all = false)
-    if !all && self.class.protected_method_defined?(mid)
-      raise "PROTECTED_METHOD_IN_RESPOND_TO"
-    end
-
-    __respond_to?(mid, all)
-  end
-end
-
 begin
   silence_warnings { require 'mocha/setup' }
 rescue LoadError
