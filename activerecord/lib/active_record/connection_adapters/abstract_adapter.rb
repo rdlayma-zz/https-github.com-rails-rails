@@ -195,7 +195,9 @@ module ActiveRecord
       def log_info(sql, name, ms)
         if @logger && @logger.debug?
           name = '%s (%.1fms)' % [name || 'SQL', ms]
-          sql.force_encoding 'binary' if sql.respond_to?(:force_encoding)
+          if sql.respond_to?(:force_encoding)
+            sql = sql.dup.force_encoding 'binary'
+          end
           @logger.debug(format_log_entry(name, sql.squeeze(' ')))
         end
       end
