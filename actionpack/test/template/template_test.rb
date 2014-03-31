@@ -1,3 +1,5 @@
+# coding: ASCII
+
 require "abstract_unit"
 
 class TestERBTemplate < ActiveSupport::TestCase

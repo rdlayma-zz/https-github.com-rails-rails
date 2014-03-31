@@ -16,6 +16,13 @@ module ActiveSupport
       def options
         nil
       end
+
+      def info_signal
+        false
+      end
+
+      def record(*)
+      end
     end
 
     if defined?(MiniTest::Assertions) && TestCase < MiniTest::Assertions

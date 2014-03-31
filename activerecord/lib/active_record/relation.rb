@@ -366,9 +366,9 @@ module ActiveRecord
         to_a.send(method, *args, &block)
       elsif @klass.scopes[method]
         merge(@klass.send(method, *args, &block))
-      elsif @klass.respond_to?(method)
+      elsif @klass.respond_to?(method, true)
         scoping { @klass.send(method, *args, &block) }
-      elsif arel.respond_to?(method)
+      elsif arel.respond_to?(method, true)
         arel.send(method, *args, &block)
       else
         super

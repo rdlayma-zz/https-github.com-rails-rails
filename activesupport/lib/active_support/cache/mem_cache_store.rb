@@ -1,3 +1,5 @@
+# coding: ASCII
+
 begin
   require 'memcache'
 rescue LoadError => e

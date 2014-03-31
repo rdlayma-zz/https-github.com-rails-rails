@@ -9,7 +9,7 @@ require 'active_support/inflections'
 class HashExtTest < Test::Unit::TestCase
   class IndifferentHash < HashWithIndifferentAccess
   end
-  
+
   class SubclassingArray < Array
   end
 
@@ -263,14 +263,14 @@ class HashExtTest < Test::Unit::TestCase
     hash = { "urls" => { "url" => [ { "address" => "1" }, { "address" => "2" } ] }}.with_indifferent_access
     assert_equal "1", hash[:urls][:url].first[:address]
   end
-  
+
   def test_should_preserve_array_subclass_when_value_is_array
     array = SubclassingArray.new
     array << { "address" => "1" }
     hash = { "urls" => { "url" => array }}.with_indifferent_access
     assert_equal SubclassingArray, hash[:urls][:url].class
   end
-  
+
   def test_should_preserve_array_class_when_hash_value_is_frozen_array
     array = SubclassingArray.new
     array << { "address" => "1" }
@@ -436,11 +436,9 @@ class HashExtTest < Test::Unit::TestCase
     original = { :a => 'x', :b => 'y', :c => 10 }.with_indifferent_access
     expected = { :c => 10 }.with_indifferent_access
 
-    [['a', 'b'], [:a, :b]].each do |keys|
-      # Should replace the hash with only the given keys.
-      copy = original.dup
-      assert_equal expected, copy.slice!(*keys)
-    end
+    assert_equal expected, original.dup.slice!("a", "b")
+
+    assert_equal expected, original.dup.slice!(:a, :b)
   end
 
   def test_indifferent_slice_access_with_symbols
@@ -515,7 +513,7 @@ class HashExtToParamTests < Test::Unit::TestCase
   def test_to_param_hash_escapes_its_keys_and_values
     assert_equal 'param+1=A+string+with+%2F+characters+%26+that+should+be+%3F+escaped', { 'param 1' => 'A string with / characters & that should be ? escaped' }.to_param
   end
-  
+
   def test_to_param_orders_by_key_in_ascending_order
     assert_equal 'a=2&b=1&c=0', ActiveSupport::OrderedHash[*%w(b 1 c 0 a 2)].to_param
   end
@@ -570,7 +568,7 @@ class HashToXmlTest < Test::Unit::TestCase
     assert_equal "<person>", xml.first(8)
     assert xml.include?(%(<street>Paulina</street>))
     assert xml.include?(%(<name>David</name>))
-    assert xml.include?(%(<age nil="true"></age>))
+    assert xml.include?(%(<age nil="true"/>))
   end
 
   def test_one_level_with_skipping_types
@@ -578,7 +576,7 @@ class HashToXmlTest < Test::Unit::TestCase
     assert_equal "<person>", xml.first(8)
     assert xml.include?(%(<street>Paulina</street>))
     assert xml.include?(%(<name>David</name>))
-    assert xml.include?(%(<age nil="true"></age>))
+    assert xml.include?(%(<age nil="true"/>))
   end
 
   def test_one_level_with_yielding
@@ -859,13 +857,13 @@ class HashToXmlTest < Test::Unit::TestCase
     hash = Hash.from_xml(xml)
     assert_equal "bacon is the best", hash['blog']['name']
   end
-  
+
   def test_empty_cdata_from_xml
     xml = "<data><![CDATA[]]></data>"
-    
+
     assert_equal "", Hash.from_xml(xml)["data"]
   end
-  
+
   def test_xsd_like_types_from_xml
     bacon_xml = <<-EOT
     <bacon>

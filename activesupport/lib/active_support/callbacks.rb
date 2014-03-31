@@ -403,7 +403,7 @@ module ActiveSupport
               if key
                 name = "_run__\#{self.class.name.hash.abs}__#{symbol}__\#{key.hash.abs}__callbacks"
 
-                unless respond_to?(name)
+                unless respond_to?(name, true)
                   self.class.__create_keyed_callback(name, :#{symbol}, self, &blk)
                 end
 
