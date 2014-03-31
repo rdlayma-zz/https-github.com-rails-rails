@@ -51,14 +51,16 @@ module ActionView
         else
           # VIEW TODO: Make #capture usable outside of ERB
           # This dance is needed because Builder can't use capture
-          pos = output_buffer.length
+          pos = output_buffer.bytesize
           yield
           if output_buffer.html_safe?
             safe_output_buffer = output_buffer.to_str
-            fragment = safe_output_buffer.slice!(pos..-1)
+            fragment = safe_output_buffer.byteslice(pos..-1)
+            safe_output_buffer = safe_output_buffer.byteslice(0...pos)
             self.output_buffer = output_buffer.class.new(safe_output_buffer)
           else
-            fragment = output_buffer.slice!(pos..-1)
+            fragment = output_buffer.byteslice(pos..-1)
+            self.output_buffer = output_buffer.byteslice(0...pos)
           end
           controller.write_fragment(name, fragment, options)
         end
