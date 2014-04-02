@@ -201,7 +201,7 @@ module ActiveRecord
             :sql => sql, :name => name, :connection_id => object_id) do
             yield
           end
-        rescue Exception => e
+        rescue => e
           message = "#{e.class.name}: #{e.message}: #{sql}"
           @logger.debug message if @logger
           ex = translate_exception(e, message)
