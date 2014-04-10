@@ -38,6 +38,10 @@ module ActiveSupport
       def method_missing(name, *args)
         @calls << [name, args]
       end
+
+      def info_signal
+        false
+      end
     end
 
     module Isolation

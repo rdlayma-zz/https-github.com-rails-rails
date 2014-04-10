@@ -19,6 +19,10 @@ module ActiveSupport
 
       def record(*args)
       end
+
+      def info_signal
+        false
+      end
     end
 
     if defined?(MiniTest::Assertions) && TestCase < MiniTest::Assertions
