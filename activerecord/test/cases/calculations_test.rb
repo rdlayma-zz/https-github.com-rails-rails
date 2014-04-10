@@ -379,4 +379,8 @@ class CalculationsTest < ActiveRecord::TestCase
     distinct_authors_for_approved_count = Topic.group(:approved).count(:author_name, :distinct => true)[true]
     assert_equal distinct_authors_for_approved_count, 2
   end
+
+  def test_pluck
+    assert_equal [50, 50, 50, 60, 55, 53], Account.order("id ASC").pluck(:credit_limit)
+  end
 end

@@ -156,6 +156,15 @@ module ActiveRecord
       0
     end
 
+    def pluck(column_name)
+      if column_name.is_a?(Symbol) && column_names.include?(column_name.to_s)
+        column_name = "#{connection.quote_table_name(table_name)}.#{connection.quote_column_name(column_name)}"
+      end
+
+      klass.connection.select_all(select(column_name).to_sql).map { |attributes|
+        attributes.values.first
+      }
+    end
     private
 
     def perform_calculation(operation, column_name, options = {})
