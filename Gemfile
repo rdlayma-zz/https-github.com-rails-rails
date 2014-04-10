@@ -33,14 +33,8 @@ group :doc do
   gem 'RedCloth', '~> 4.2'
   gem 'w3c_validators'
 end
-
 # AS
 gem 'memcache-client', '>= 1.8.5'
-
-platforms :mri_18 do
-  gem 'system_timer'
-  gem 'json'
-end
 
 # Add your own local bundler stuff
 instance_eval File.read '.Gemfile' if File.exists? '.Gemfile'
@@ -64,35 +58,5 @@ platforms :ruby do
     gem 'mysql2', '>= 0.3.10'
   end
 end
-
-platforms :jruby do
-  gem 'json'
-  gem 'activerecord-jdbcsqlite3-adapter', '>= 1.2.7'
-
-  # This is needed by now to let tests work on JRuby
-  # TODO: When the JRuby guys merge jruby-openssl in
-  # jruby this will be removed
-  gem 'jruby-openssl'
-
-  group :db do
-    gem 'activerecord-jdbcmysql-adapter', '>= 1.2.7'
-    gem 'activerecord-jdbcpostgresql-adapter', '>= 1.2.7'
-  end
-end
-
-# gems that are necessary for ActiveRecord tests with Oracle database
-if ENV['ORACLE_ENHANCED_PATH'] || ENV['ORACLE_ENHANCED']
-  platforms :ruby do
-    gem 'ruby-oci8', '>= 2.0.4'
-  end
-  if ENV['ORACLE_ENHANCED_PATH']
-    gem 'activerecord-oracle_enhanced-adapter', :path => ENV['ORACLE_ENHANCED_PATH']
-  else
-    gem 'activerecord-oracle_enhanced-adapter', :git => 'git://github.com/rsim/oracle-enhanced.git'
-  end
-end
-
-# A gem necessary for ActiveRecord tests with IBM DB
-gem 'ibm_db' if ENV['IBM_DB']
 
 gem 'benchmark-ips'
