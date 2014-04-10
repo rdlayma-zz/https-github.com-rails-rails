@@ -1,3 +1,11 @@
+GIT
+  remote: git://github.com/fxn/sdoc.git
+  revision: 9977ca4ecf83a76d637861f79319b11830d51de5
+  specs:
+    sdoc (0.3.19)
+      json (>= 1.1.3)
+      rdoc (~> 3.10)
+
 PATH
   remote: .
   specs:
@@ -47,6 +55,7 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
+    RedCloth (4.2.9)
     arel (3.0.3)
     bcrypt-ruby (3.0.1)
     benchmark-ips (1.2.0)
@@ -99,12 +108,16 @@ GEM
     uglifier (2.5.0)
       execjs (>= 0.3.0)
       json (>= 1.8.0)
+    w3c_validators (1.2)
+      json
+      nokogiri
     yajl-ruby (1.2.0)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
+  RedCloth (~> 4.2)
   arel
   bcrypt-ruby (~> 3.0.0)
   benchmark-ips
@@ -118,6 +131,8 @@ DEPENDENCIES
   pg (>= 0.11.0)
   rails!
   rake (>= 0.8.7)
+  sdoc!
   sqlite3 (~> 1.3.5)
   uglifier (>= 1.0.3)
+  w3c_validators
   yajl-ruby
