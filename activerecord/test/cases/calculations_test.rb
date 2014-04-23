@@ -3,6 +3,8 @@ require 'models/company'
 require 'models/topic'
 require 'models/edge'
 require 'models/club'
+require 'models/membership'
+require 'models/member'
 require 'models/organization'
 
 Company.has_many :accounts
@@ -65,7 +67,7 @@ class CalculationsTest < ActiveRecord::TestCase
     c = Account.sum(:credit_limit, :group => :firm_id)
     [1,6,2].each { |firm_id| assert c.keys.include?(firm_id) }
   end
-  
+
   def test_should_group_by_multiple_fields
     c = Account.count(:all, :group => ['firm_id', :credit_limit])
     [ [nil, 50], [1, 50], [6, 50], [6, 55], [9, 53], [2, 60] ].each { |firm_and_limit| assert c.keys.include?(firm_and_limit) }
@@ -382,5 +384,17 @@ class CalculationsTest < ActiveRecord::TestCase
 
   def test_pluck
     assert_equal [50, 50, 50, 60, 55, 53], Account.order("id ASC").pluck(:credit_limit)
+  end
+
+  def test_uniq_count
+    club = Club.create(:name => "the club of complaining about rails")
+    charliesome = Member.create(:name => "charliesome")
+    rsanheim    = Member.create(:name => "rsanheim")
+    Membership.create(:club => club, :member => charliesome)
+    Membership.create(:club => club, :member => charliesome)
+    Membership.create(:club => club, :member => rsanheim)
+
+    assert_equal 2, club.unique_members.count
+    assert_equal 2, club.unique_members.where("1 = 1").count
   end
 end
