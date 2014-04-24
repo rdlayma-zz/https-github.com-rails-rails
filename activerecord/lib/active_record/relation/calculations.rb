@@ -183,7 +183,17 @@ module ActiveRecord
         distinct = nil if column_name =~ /\s*DISTINCT\s+/i
       end
 
-      distinct = options[:distinct] || distinct
+      if select_values.count == 1 && select_values[0] =~ /\A\s*DISTINCT/
+        distinct = true
+        select_values[0].sub!(/\A\s*DISTINCT/, "")
+        if column_name == :all
+          column_name = klass.primary_key
+        else
+          column_name = column_name.to_s.sub(/\A\s*DISTINCT/, "")
+        end
+      else
+        distinct = options[:distinct] || distinct
+      end
 
       if @group_values.any?
         execute_grouped_calculation(operation, column_name, distinct)
@@ -223,7 +233,7 @@ module ActiveRecord
       group_fields  = Array(associated ? association.primary_key_name : group_attr)
       group_aliases = []
       group_columns = {}
-      
+
       group_fields.each do |field|
         group_aliases << column_alias_for(field)
         group_columns[column_alias_for(field)] = column_for(field)
