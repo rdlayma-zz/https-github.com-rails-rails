@@ -219,7 +219,7 @@ module ActionController #:nodoc:
 
     # A shortcut to the flash. Returns an empty hash if no session flash exists.
     def flash
-      session['flash'] || {}
+      ActionController::Flash::FlashHash.from_session_value(session["flash"]) || {}
     end
 
     # Do we have a flash?
