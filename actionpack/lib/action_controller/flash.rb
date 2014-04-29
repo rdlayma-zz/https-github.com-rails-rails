@@ -98,6 +98,10 @@ module ActionController #:nodoc:
         super(k.to_s)
       end
 
+      def delete(k)
+        super(k.to_s)
+      end
+
       def update(h) #:nodoc:
         h.stringify_keys!
         h.keys.each { |k| keep(k) }
