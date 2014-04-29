@@ -1,5 +1,5 @@
 require 'active_support/core_ext/hash/keys'
-require 'active_support/core_ext/class/inheritable_attributes'
+require 'active_support/core_ext/class/attribute'
 
 module ActiveModel
   class MissingAttributeError < NoMethodError
@@ -57,6 +57,11 @@ module ActiveModel
     extend ActiveSupport::Concern
 
     COMPILABLE_REGEXP = /^[a-zA-Z_]\w*[!?=]?$/
+
+    included do
+      class_attribute :attribute_method_matchers, :instance_writer => false
+      self.attribute_method_matchers = []
+    end
 
     module ClassMethods
       # Defines an "attribute" method (like +inheritance_column+ or +table_name+).
@@ -151,7 +156,7 @@ module ActiveModel
       #   person.clear_name
       #   person.name          # => nil
       def attribute_method_prefix(*prefixes)
-        attribute_method_matchers.concat(prefixes.map { |prefix| AttributeMethodMatcher.new :prefix => prefix })
+        self.attribute_method_matchers += prefixes.map { |prefix| AttributeMethodMatcher.new :prefix => prefix }
         undefine_attribute_methods
       end
 
@@ -188,7 +193,7 @@ module ActiveModel
       #   person.name          # => "Bob"
       #   person.name_short?   # => true
       def attribute_method_suffix(*suffixes)
-        attribute_method_matchers.concat(suffixes.map { |suffix| AttributeMethodMatcher.new :suffix => suffix })
+        self.attribute_method_matchers += suffixes.map { |suffix| AttributeMethodMatcher.new :suffix => suffix }
         undefine_attribute_methods
       end
 
@@ -226,7 +231,7 @@ module ActiveModel
       #   person.reset_name_to_default!
       #   person.name                         # => 'Gemma'
       def attribute_method_affix(*affixes)
-        attribute_method_matchers.concat(affixes.map { |affix| AttributeMethodMatcher.new :prefix => affix[:prefix], :suffix => affix[:suffix] })
+        self.attribute_method_matchers += affixes.map { |affix| AttributeMethodMatcher.new :prefix => affix[:prefix], :suffix => affix[:suffix] }
         undefine_attribute_methods
       end
 
@@ -292,11 +297,19 @@ module ActiveModel
                 RUBY
 
                 if method_name.to_s =~ COMPILABLE_REGEXP
-                  generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
-                    def #{method_name}(*args)
-                      send(:#{matcher.method_missing_target}, '#{attr_name}', *args)
-                    end
-                  RUBY
+                  if method_name.to_s[-1] != "="
+                    generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
+                      def #{method_name}(*args)
+                        #{matcher.method_missing_target}('#{attr_name}'.freeze, *args)
+                      end
+                    RUBY
+                  else
+                    generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
+                      def #{method_name}(*args)
+                        send(:#{matcher.method_missing_target}, '#{attr_name}'.freeze, *args)
+                      end
+                    RUBY
+                  end
                 else
                   generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
                     define_method('#{method_name}') do |*args|
@@ -340,7 +353,7 @@ module ActiveModel
 
       private
         class AttributeMethodMatcher
-          attr_reader :prefix, :suffix
+          attr_reader :prefix, :suffix, :method_missing_target
 
           AttributeMethodMatch = Struct.new(:target, :attr_name)
 
@@ -348,27 +361,21 @@ module ActiveModel
             options.symbolize_keys!
             @prefix, @suffix = options[:prefix] || '', options[:suffix] || ''
             @regex = /\A(#{Regexp.escape(@prefix)})(.+?)(#{Regexp.escape(@suffix)})\z/
+            @method_missing_target = :"#{@prefix}attribute#{@suffix}"
+            @method_name = "#{prefix}%s#{suffix}"
           end
 
           def match(method_name)
-            if matchdata = @regex.match(method_name)
-              AttributeMethodMatch.new(method_missing_target, matchdata[2])
+            if @regex =~ method_name
+              AttributeMethodMatch.new(method_missing_target, $2)
             else
               nil
             end
           end
 
           def method_name(attr_name)
-            "#{prefix}#{attr_name}#{suffix}"
+            @method_name % attr_name
           end
-
-          def method_missing_target
-            :"#{prefix}attribute#{suffix}"
-          end
-        end
-
-        def attribute_method_matchers #:nodoc:
-          read_inheritable_attribute(:attribute_method_matchers) || write_inheritable_attribute(:attribute_method_matchers, [])
         end
     end
 
@@ -418,7 +425,7 @@ module ActiveModel
       # Returns a struct representing the matching attribute method.
       # The struct's attributes are prefix, base and suffix.
       def match_attribute_method?(method_name)
-        self.class.send(:attribute_method_matchers).each do |method|
+        self.class.attribute_method_matchers.each do |method|
           if (match = method.match(method_name)) && attribute_method?(match.attr_name)
             return match
           end
@@ -429,7 +436,7 @@ module ActiveModel
       # prevent method_missing from calling private methods with #send
       def guard_private_attribute_method!(method_name, args)
         if self.class.private_method_defined?(method_name)
-          raise NoMethodError.new("Attempt to call private method", method_name, args)
+          raise NoMethodError.new("Attempt to call private method `#{method_name}'", method_name, args)
         end
       end
 
