@@ -297,11 +297,19 @@ module ActiveModel
                 RUBY
 
                 if method_name.to_s =~ COMPILABLE_REGEXP
-                  generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
-                    def #{method_name}(*args)
-                      send(:#{matcher.method_missing_target}, '#{attr_name}', *args)
-                    end
-                  RUBY
+                  if method_name.to_s[-1] != "="
+                    generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
+                      def #{method_name}(*args)
+                        #{matcher.method_missing_target}('#{attr_name}'.freeze, *args)
+                      end
+                    RUBY
+                  else
+                    generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
+                      def #{method_name}(*args)
+                        send(:#{matcher.method_missing_target}, '#{attr_name}'.freeze, *args)
+                      end
+                    RUBY
+                  end
                 else
                   generated_attribute_methods.module_eval <<-RUBY, __FILE__, __LINE__ + 1
                     define_method('#{method_name}') do |*args|
