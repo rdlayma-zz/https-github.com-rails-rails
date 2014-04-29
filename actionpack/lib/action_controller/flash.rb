@@ -45,13 +45,14 @@ module ActionController #:nodoc:
       end
 
       def []=(k, v)
+        k = k.to_s
         @flash[k] = v
         @flash.discard(k)
         v
       end
 
       def [](k)
-        @flash[k]
+        @flash[k.to_s]
       end
     end
 
@@ -62,7 +63,11 @@ module ActionController #:nodoc:
                   value
                 when Hash # Rails 4.0
                   flashes = value['flashes'] || {}
-                  discard = value['discard']
+                  flashes.stringify_keys!
+                  discard = value['discard'] || []
+                  discard = discard.map do |item|
+                    item.kind_of?(Symbol) ? item.to_s : item
+                  end
                   used = Hash[flashes.keys.map{|k| [k, discard.include?(k)] }]
 
                   new_from_values(flashes, used)
@@ -84,20 +89,26 @@ module ActionController #:nodoc:
       end
 
       def []=(k, v) #:nodoc:
+        k = k.to_s
         keep(k)
-        super
+        super(k, v)
+      end
+
+      def [](k)
+        super(k.to_s)
       end
 
       def update(h) #:nodoc:
+        h.stringify_keys!
         h.keys.each { |k| keep(k) }
-        super
+        super(h)
       end
 
       alias :merge! :update
 
       def replace(h) #:nodoc:
         @used = {}
-        super
+        super(h.stringify_keys)
       end
 
       # Sets a flash that will not be available to the next action, only to the current.
@@ -159,7 +170,7 @@ module ActionController #:nodoc:
         #     use('msg', false)   # marks the "msg" entry as unused (keeps it around for one more action)
         def use(k=nil, v=true)
           unless k.nil?
-            @used[k] = v
+            @used[k.to_s] = v
           else
             keys.each{ |key| use(key, v) }
           end
