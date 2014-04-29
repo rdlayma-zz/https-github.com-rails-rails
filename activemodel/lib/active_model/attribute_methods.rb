@@ -345,7 +345,7 @@ module ActiveModel
 
       private
         class AttributeMethodMatcher
-          attr_reader :prefix, :suffix
+          attr_reader :prefix, :suffix, :method_missing_target
 
           AttributeMethodMatch = Struct.new(:target, :attr_name)
 
@@ -353,22 +353,20 @@ module ActiveModel
             options.symbolize_keys!
             @prefix, @suffix = options[:prefix] || '', options[:suffix] || ''
             @regex = /\A(#{Regexp.escape(@prefix)})(.+?)(#{Regexp.escape(@suffix)})\z/
+            @method_missing_target = :"#{@prefix}attribute#{@suffix}"
+            @method_name = "#{prefix}%s#{suffix}"
           end
 
           def match(method_name)
-            if matchdata = @regex.match(method_name)
-              AttributeMethodMatch.new(method_missing_target, matchdata[2])
+            if @regex =~ method_name
+              AttributeMethodMatch.new(method_missing_target, $2)
             else
               nil
             end
           end
 
           def method_name(attr_name)
-            "#{prefix}#{attr_name}#{suffix}"
-          end
-
-          def method_missing_target
-            :"#{prefix}attribute#{suffix}"
+            @method_name % attr_name
           end
         end
     end
