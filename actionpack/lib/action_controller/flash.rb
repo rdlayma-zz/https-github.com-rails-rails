@@ -95,7 +95,12 @@ module ActionController #:nodoc:
       end
 
       def [](k)
-        super(k.to_s)
+        v = super(k.to_s)
+        if v.is_a? Hash
+          v.with_indifferent_access
+        else
+          v
+        end
       end
 
       def delete(k)
