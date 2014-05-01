@@ -65,7 +65,8 @@ end
 
 class String #:nodoc:
   def blank?
-    self !~ /\S/
+    return true if empty?
+    self =~ /\A\s*\z/
   end
 end
 
