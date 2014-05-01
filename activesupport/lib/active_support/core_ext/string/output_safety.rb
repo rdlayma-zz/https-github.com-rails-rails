@@ -99,7 +99,7 @@ module ActiveSupport #:nodoc:
     def [](*args)
       return super if args.size < 2
 
-      if html_safe?
+      if @html_safe
         new_safe_buffer = super
         new_safe_buffer.instance_eval { @html_safe = true }
         new_safe_buffer
@@ -109,7 +109,7 @@ module ActiveSupport #:nodoc:
     end
 
     def safe_concat(value)
-      raise SafeConcatError unless html_safe?
+      raise SafeConcatError unless @html_safe
       original_concat(value)
     end
 
@@ -128,7 +128,7 @@ module ActiveSupport #:nodoc:
     end
 
     def concat(value)
-      if !html_safe? || value.html_safe?
+      if !@html_safe || value.html_safe?
         super(value)
       else
         super(ERB::Util.h(value))
