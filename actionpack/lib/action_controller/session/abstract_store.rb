@@ -89,7 +89,7 @@ module ActionController
           load_for_write!
           value = super(key)
           string_value = super(key.to_s)
-          value || string_value
+          string_value || value
         end
 
         def data
