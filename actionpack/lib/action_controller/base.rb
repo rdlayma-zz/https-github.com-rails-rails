@@ -1320,7 +1320,14 @@ module ActionController #:nodoc:
         render
       end
 
+      CVE_2014_0310 = Class.new(StandardError)
+
       def perform_action
+        # CVE-2014-0130 protection
+        if action_name.include? "/"
+          raise CVE_2014_0310
+        end
+
         if action_methods.include?(action_name)
           send(action_name)
           default_render unless performed?
