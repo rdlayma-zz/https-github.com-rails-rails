@@ -9,7 +9,7 @@ module AbstractController
   # <tt>AbstractController::Base</tt> is a low-level API. Nobody should be
   # using it directly, and subclasses (like ActionController::Base) are
   # expected to provide their own +render+ method, since rendering means
-  # different things depending on the context.  
+  # different things depending on the context.
   class Base
     attr_internal :response_body
     attr_internal :action_name
@@ -164,6 +164,8 @@ module AbstractController
         action_missing(@_action_name)
       end
 
+      CVE_2014_0130 = Class.new(StandardError)
+
       # Takes an action name and returns the name of the method that will
       # handle the action. In normal cases, this method returns the same
       # name as it receives. By default, if #method_for_action receives
@@ -188,6 +190,10 @@ module AbstractController
       # * <tt>string</tt> - The name of the method that handles the action
       # * <tt>nil</tt>    - No method name could be found. Raise ActionNotFound.
       def method_for_action(action_name)
+        if action_name.include?("/")
+          raise CVE_2014_0130
+        end
+
         if action_method?(action_name) then action_name
         elsif respond_to?(:action_missing, true) then "_handle_action_missing"
         end
