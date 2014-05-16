@@ -86,7 +86,8 @@ module ActionController
         @secret = options.delete(:secret).freeze
 
         @digest = options.delete(:digest) || 'SHA1'
-        @verifier = verifier_for(@secret, @digest)
+        @serializer = options.delete(:serializer) || Marshal
+        @verifier = verifier_for(@secret, @digest, @serializer)
 
         @default_options = DEFAULT_OPTIONS.merge(options).freeze
 
@@ -138,13 +139,13 @@ module ActionController
         def load_session(env)
           data = unpacked_cookie_data(env)
           data = persistent_session_id!(data)
-          [data[:session_id], data]
+          [data["session_id"] || data[:session_id], data]
         end
 
         def extract_session_id(env)
           if data = unpacked_cookie_data(env)
             persistent_session_id!(data) unless data.empty?
-            data[:session_id]
+            data["session_id"] || data[:session_id]
           else
             nil
           end
@@ -214,9 +215,9 @@ module ActionController
           end
         end
 
-        def verifier_for(secret, digest)
+        def verifier_for(secret, digest, serializer)
           key = secret.respond_to?(:call) ? secret.call : secret
-          ActiveSupport::MessageVerifier.new(key, digest: digest)
+          ActiveSupport::MessageVerifier.new(key, digest: digest, serializer: serializer)
         end
 
         def generate_sid
@@ -232,12 +233,12 @@ module ActionController
         end
 
         def inject_persistent_session_id(data)
-          requires_session_id?(data) ? { :session_id => generate_sid } : {}
+          requires_session_id?(data) ? { "session_id" => generate_sid } : {}
         end
 
         def requires_session_id?(data)
           if data
-            data.respond_to?(:key?) && !data.key?(:session_id)
+            data.respond_to?(:key?) && !(data.key?("session_id") || data.key?(:session_id))
           else
             true
           end

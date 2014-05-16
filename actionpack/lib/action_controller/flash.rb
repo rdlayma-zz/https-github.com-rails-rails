@@ -45,37 +45,74 @@ module ActionController #:nodoc:
       end
 
       def []=(k, v)
+        k = k.to_s
         @flash[k] = v
         @flash.discard(k)
         v
       end
 
       def [](k)
-        @flash[k]
+        @flash[k.to_s]
       end
     end
 
     class FlashHash < Hash
+      def self.from_session_value(value)
+        flash = case value
+                when FlashHash # Rails 2.3
+                  value
+                when Hash # Rails 4.0
+                  flashes = value['flashes'] || {}
+                  flashes.stringify_keys!
+                  discard = value['discard'] || []
+                  discard = discard.map do |item|
+                    item.kind_of?(Symbol) ? item.to_s : item
+                  end
+                  used = Hash[flashes.keys.map{|k| [k, discard.include?(k)] }]
+
+                  new_from_values(flashes, used)
+                else
+                  new
+                end
+        flash
+      end
+
       def initialize #:nodoc:
         super
         @used = {}
       end
 
+      def to_session_value
+        return nil if empty?
+        rails_3_discard_list = @used.map{|k,v| k if v}.compact
+        {'discard' => rails_3_discard_list, 'flashes' => Hash[to_a]}
+      end
+
       def []=(k, v) #:nodoc:
+        k = k.to_s
         keep(k)
-        super
+        super(k, v)
+      end
+
+      def [](k)
+        super(k.to_s)
+      end
+
+      def delete(k)
+        super(k.to_s)
       end
 
       def update(h) #:nodoc:
+        h.stringify_keys!
         h.keys.each { |k| keep(k) }
-        super
+        super(h)
       end
 
       alias :merge! :update
 
       def replace(h) #:nodoc:
         @used = {}
-        super
+        super(h.stringify_keys)
       end
 
       # Sets a flash that will not be available to the next action, only to the current.
@@ -126,8 +163,7 @@ module ActionController #:nodoc:
       end
 
       def store(session, key = "flash")
-        return if self.empty?
-        session[key] = self
+        session[key] = to_session_value
       end
 
       private
@@ -138,9 +174,18 @@ module ActionController #:nodoc:
         #     use('msg', false)   # marks the "msg" entry as unused (keeps it around for one more action)
         def use(k=nil, v=true)
           unless k.nil?
-            @used[k] = v
+            @used[k.to_s] = v
           else
             keys.each{ |key| use(key, v) }
+          end
+        end
+
+        def self.new_from_values(flashes, used)
+          new.tap do |flash_hash|
+            flashes.each do |k, v|
+              flash_hash[k] = v
+            end
+            flash_hash.instance_variable_set("@used", used)
           end
         end
     end
@@ -168,11 +213,11 @@ module ActionController #:nodoc:
           if notice = response_status_and_flash.delete(:notice)
             flash[:notice] = notice
           end
-          
+
           if other_flashes = response_status_and_flash.delete(:flash)
             flash.update(other_flashes)
           end
-          
+
           redirect_to_without_flash(options, response_status_and_flash)
         end
 
@@ -181,19 +226,19 @@ module ActionController #:nodoc:
         # to put a new one.
         def flash #:doc:
           if !defined?(@_flash)
-            @_flash = session["flash"] || FlashHash.new
+            @_flash = Flash::FlashHash.from_session_value(session["flash"])
             @_flash.sweep
           end
 
           @_flash
         end
 
-        
+
         # Convenience accessor for flash[:alert]
         def alert
           flash[:alert]
         end
-        
+
         # Convenience accessor for flash[:alert]=
         def alert=(message)
           flash[:alert] = message
@@ -203,7 +248,7 @@ module ActionController #:nodoc:
         def notice
           flash[:notice]
         end
-        
+
         # Convenience accessor for flash[:notice]=
         def notice=(message)
           flash[:notice] = message

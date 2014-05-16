@@ -2,7 +2,7 @@ require 'rack/utils'
 
 module ActionController
   module Session
-    class AbstractStore  
+    class AbstractStore
       ENV_SESSION_KEY = 'rack.session'.freeze
       ENV_SESSION_OPTIONS_KEY = 'rack.session.options'.freeze
 
@@ -55,17 +55,17 @@ module ActionController
 
         def [](key)
           load_for_read!
-          super
+          super(key.to_s) || super(key)
         end
 
         def has_key?(key)
           load_for_read!
-          super
+          super(key.to_s) || super(key)
         end
 
         def []=(key, value)
           load_for_write!
-          super
+          super(key.to_s, value)
         end
 
         def clear
@@ -87,7 +87,9 @@ module ActionController
 
         def delete(key)
           load_for_write!
-          super
+          value = super(key)
+          string_value = super(key.to_s)
+          string_value || value
         end
 
         def data
@@ -119,7 +121,7 @@ module ActionController
         end
 
         private
-          
+
           def load_for_read!
             load! if !loaded? && exists?
           end
@@ -183,7 +185,7 @@ module ActionController
           request = ActionController::Request.new(env)
 
           return response if (options[:secure] && !request.ssl?)
-        
+
           session_data.send(:load!) if session_data.is_a?(AbstractStore::SessionHash) && !session_data.loaded?
 
           sid = options[:id] || generate_sid
@@ -205,12 +207,12 @@ module ActionController
       end
 
       private
-      
+
         def prepare!(env)
           env[ENV_SESSION_KEY] = SessionHash.new(self, env)
           env[ENV_SESSION_OPTIONS_KEY] = OptionsHash.new(self, env, @default_options)
         end
-      
+
         def generate_sid
           ActiveSupport::SecureRandom.hex(16)
         end
@@ -222,7 +224,7 @@ module ActionController
             [sid, session]
           end
         end
-        
+
         def extract_session_id(env)
           stale_session_check! do
             request = Rack::Request.new(env)
@@ -235,7 +237,7 @@ module ActionController
         def current_session_id(env)
           env[ENV_SESSION_OPTIONS_KEY][:id]
         end
-        
+
         def exists?(env)
           current_session_id(env).present?
         end
@@ -247,11 +249,11 @@ module ActionController
         def set_session(env, sid, session_data)
           raise '#set_session needs to be implemented.'
         end
-        
+
         def destroy(env)
           raise '#destroy needs to be implemented.'
         end
-        
+
         module SessionUtils
           private
           def stale_session_check!
