@@ -83,7 +83,7 @@ module ActionController
 
         def update(hash)
           load_for_write!
-          super
+          super(hash.stringify_keys)
         end
 
         def delete(key)
