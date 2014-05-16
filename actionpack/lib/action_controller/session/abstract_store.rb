@@ -55,7 +55,8 @@ module ActionController
 
         def [](key)
           load_for_read!
-          super(key.to_s) || super(key)
+          string_value = super(key.to_s)
+          string_value.nil? ? super(key) : string_value
         end
 
         def has_key?(key)
@@ -89,7 +90,7 @@ module ActionController
           load_for_write!
           value = super(key)
           string_value = super(key.to_s)
-          string_value || value
+          string_value.nil? ? value : string_value
         end
 
         def data
