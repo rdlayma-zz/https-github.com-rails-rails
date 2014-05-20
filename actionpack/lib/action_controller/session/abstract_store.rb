@@ -55,8 +55,7 @@ module ActionController
 
         def [](key)
           load_for_read!
-          string_value = super(key.to_s)
-          string_value.nil? ? super(key) : string_value
+          fetch(key.to_s, super(key))
         end
 
         def has_key?(key)
@@ -88,9 +87,14 @@ module ActionController
 
         def delete(key)
           load_for_write!
-          value = super(key)
-          string_value = super(key.to_s)
-          string_value.nil? ? value : string_value
+          if has_key? key
+            value = self[key]
+            super(key)
+            super(key.to_s)
+            value
+          else
+            super
+          end
         end
 
         def data
