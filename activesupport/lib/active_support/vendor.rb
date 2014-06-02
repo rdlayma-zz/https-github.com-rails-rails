@@ -9,7 +9,7 @@ rescue Gem::LoadError
   $:.unshift "#{File.dirname(__FILE__)}/vendor/memcache-client-1.7.4"
 end
 
-$:.unshift "#{File.dirname(__FILE__)}/vendor/tzinfo-0.3.12"
+$:.unshift "#{File.dirname(__FILE__)}/vendor/tzinfo-0.3.39"
 
 require 'i18n'
 
