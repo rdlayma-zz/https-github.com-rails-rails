@@ -44,6 +44,23 @@ class FilterParamTest < Test::Unit::TestCase
     end
   end
 
+  def test_log_is_filtered
+    FilterParamController.filter_parameter_logging(:password, :foo)
+
+    params = {
+      :foo => "not logged",
+      :bar => "logged",
+      :nested => { :password => "not logged" },
+      :controller => "not_logged",
+      :action => "not_logged",
+    }.freeze
+    logger = stub("Logger")
+    logger.expects(:info).with(%Q{  Parameters: {:foo=>"[FILTERED]", :bar=>"logged", :nested=>{:password=>"[FILTERED]"}}})
+    @controller.stubs(:params => params, :logger => logger)
+
+    @controller.send(:log_processing_for_parameters)
+  end
+
   def test_filter_parameters_is_protected
     FilterParamController.filter_parameter_logging(:foo)
     assert !FilterParamController.action_methods.include?('filter_parameters')
