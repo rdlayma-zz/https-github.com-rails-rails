@@ -61,12 +61,7 @@ module ActiveRecord
       end
 
       def quoted_date(value)
-        if value.acts_like?(:time)
-          zone_conversion_method = ActiveRecord::Base.default_timezone == :utc ? :getutc : :getlocal
-          value.respond_to?(zone_conversion_method) ? value.send(zone_conversion_method) : value
-        else
-          value
-        end.to_s(:db)
+        value.to_s(:db)
       end
     end
   end
