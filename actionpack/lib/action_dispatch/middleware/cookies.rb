@@ -111,6 +111,7 @@ module ActionDispatch
         else
           nil
         end
+        byebug unless serializer
 
         new(secret, host, secure, serializer).tap do |hash|
           hash.update(request.cookies)
@@ -124,6 +125,7 @@ module ActionDispatch
         @host = host
         @secure = secure
         @serializer = serializer
+        byebug unless serializer
 
         super()
       end
@@ -142,6 +144,8 @@ module ActionDispatch
         end
 
         @serializer = options[:serializer]
+        byebug unless @serializer
+
       end
 
       # Sets the cookie named +name+. The second argument may be the very cookie
