@@ -4,7 +4,7 @@ require 'active_support/values/time_zone'
 class Time
   DATE_FORMATS = {
     :db           => lambda { |time|
-      time = time.dup.utc.to_time
+      time = time.dup.utc.to_time.utc
 
       if !defined?(ActiveRecord::Base.default_timezone) || ActiveRecord::Base.default_timezone == :local
         # our DB is in local time (ugh), so make sure the time object is
