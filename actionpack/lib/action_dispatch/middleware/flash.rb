@@ -4,7 +4,7 @@ module ActionDispatch
     # read a notice you put there or <tt>flash["notice"] = "hello"</tt>
     # to put a new one.
     def flash
-      @env[Flash::KEY] ||= (session["flash"] || Flash::FlashHash.new)
+      @env[Flash::KEY] ||= Flash::FlashHash.from_session_value(session["flash"]).tap(&:sweep)
     end
   end
 
@@ -77,6 +77,22 @@ module ActionDispatch
     class FlashHash
       include Enumerable
 
+      def self.from_session_value(value)
+        case value
+        when ::ActionDispatch::Flash::FlashHash # Rails 3.1, 3.2
+          new(value.instance_variable_get(:@flashes), value.instance_variable_get(:@used))
+        when Hash # Rails 4.0
+          new(value['flashes'], value['discard'])
+        else
+          new
+        end
+      end
+
+      def to_session_value
+        return nil if empty?
+        {'discard' => @used.to_a, 'flashes' => @flashes}
+      end
+
       def initialize #:nodoc:
         @used    = Set.new
         @closed  = false
@@ -93,15 +109,17 @@ module ActionDispatch
       end
 
       def []=(k, v) #:nodoc:
+        k = k.to_s
         keep(k)
         @flashes[k] = v
       end
 
       def [](k)
-        @flashes[k]
+        @flashes[k.to_s]
       end
 
       def update(h) #:nodoc:
+        h.stringify_keys!
         h.keys.each { |k| keep(k) }
         @flashes.update h
         self
@@ -112,11 +130,11 @@ module ActionDispatch
       end
 
       def key?(name)
-        @flashes.key? name
+        @flashes.key? name.to_s
       end
 
       def delete(key)
-        @flashes.delete key
+        @flashes.delete key.to_s
         self
       end
 
@@ -140,7 +158,7 @@ module ActionDispatch
 
       def replace(h) #:nodoc:
         @used = Set.new
-        @flashes.replace h
+        @flashes.replace h.stringify_keys
         self
       end
 
@@ -235,10 +253,6 @@ module ActionDispatch
     end
 
     def call(env)
-      if (session = env['rack.session']) && (flash = session['flash'])
-        flash.sweep
-      end
-
       @app.call(env)
     ensure
       session    = env['rack.session'] || {}
@@ -246,7 +260,7 @@ module ActionDispatch
 
       if flash_hash
         if !flash_hash.empty? || session.key?('flash')
-          session["flash"] = flash_hash
+          session["flash"] = flash_hash.to_session_value
           new_hash = flash_hash.dup
         else
           new_hash = flash_hash
@@ -255,7 +269,7 @@ module ActionDispatch
         env[KEY] = new_hash
       end
 
-      if session.key?('flash') && session['flash'].empty?
+      if session.key?('flash') && session['flash'].nil?
         session.delete('flash')
       end
     end
