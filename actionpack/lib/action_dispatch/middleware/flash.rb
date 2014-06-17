@@ -1,5 +1,5 @@
 module ActionDispatch
-  class Request
+  class Request < Rack::Request
     # Access the contents of the flash. Use <tt>flash["notice"]</tt> to
     # read a notice you put there or <tt>flash["notice"] = "hello"</tt>
     # to put a new one.
@@ -79,10 +79,14 @@ module ActionDispatch
 
       def self.from_session_value(value)
         case value
-        when ::ActionDispatch::Flash::FlashHash # Rails 3.1, 3.2
-          new(value.instance_variable_get(:@flashes), value.instance_variable_get(:@used))
         when Hash # Rails 4.0
-          new(value['flashes'], value['discard'])
+          flashes = value['flashes'] || {}
+          flashes.stringify_keys!
+          discard = value['discard'] || []
+          discard = discard.map do |item|
+            item.kind_of?(Symbol) ? item.to_s : item
+          end
+          new_from_values(flashes, Set.new(discard))
         else
           new
         end
@@ -90,7 +94,7 @@ module ActionDispatch
 
       def to_session_value
         return nil if empty?
-        {'discard' => @used.to_a, 'flashes' => @flashes}
+        {'discard' => @used, 'flashes' => Hash[to_a]}
       end
 
       def initialize #:nodoc:
@@ -245,6 +249,15 @@ module ActionDispatch
         def use(key = nil, used = true)
           Array(key || keys).each { |k| used ? @used << k : @used.delete(k) }
           return key ? self[key] : self
+        end
+
+        def self.new_from_values(flashes, used)
+          new.tap do |flash_hash|
+            flashes.each do |k, v|
+              flash_hash[k] = v
+            end
+            flash_hash.instance_variable_set("@used", used)
+          end
         end
     end
 
