@@ -79,6 +79,7 @@ module ActionDispatch
   class Cookies
     HTTP_HEADER = "Set-Cookie".freeze
     TOKEN_KEY   = "action_dispatch.secret_token".freeze
+    SESSION_SERIALIZER = "action_dispatch.session_serializer".freeze
 
     # Raised when storing more than 4K of session data.
     class CookieOverflow < StandardError; end
@@ -106,12 +107,7 @@ module ActionDispatch
         secret = request.env[TOKEN_KEY]
         host = request.host
         secure = request.ssl?
-        serializer = if session_options = request.env[Session::AbstractStore::ENV_SESSION_OPTIONS_KEY]
-          session_options[:serializer]
-        else
-          nil
-        end
-        byebug unless serializer
+        serializer = request.env[SESSION_SERIALIZER]
 
         new(secret, host, secure, serializer).tap do |hash|
           hash.update(request.cookies)
@@ -125,7 +121,6 @@ module ActionDispatch
         @host = host
         @secure = secure
         @serializer = serializer
-        byebug unless serializer
 
         super()
       end
@@ -142,10 +137,6 @@ module ActionDispatch
           @host =~ DOMAIN_REGEXP
           options[:domain] = ".#{$1}.#{$2}"
         end
-
-        @serializer = options[:serializer]
-        byebug unless @serializer
-
       end
 
       # Sets the cookie named +name+. The second argument may be the very cookie
