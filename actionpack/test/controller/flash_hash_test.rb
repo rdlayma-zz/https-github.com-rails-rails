@@ -41,6 +41,7 @@ module ActionDispatch
       @hash['foo'] = 'bar'
       assert_equal({'foo' => 'bar'}, @hash.to_hash)
 
+      skip "For Rails 3 we are modifying the actual hash, not a dup of the @flashes ivar"
       @hash.to_hash['zomg'] = 'aaron'
       assert !@hash.key?('zomg')
       assert_equal({'foo' => 'bar'}, @hash.to_hash)
@@ -61,6 +62,7 @@ module ActionDispatch
     end
 
     def test_from_session_value
+      skip "Rails 3.2 cookie is invalid for 3.0 backport and we do not support old session cookies for 3.0"
       rails_3_2_cookie = 'BAh7B0kiD3Nlc3Npb25faWQGOgZFRkkiJWY4ZTFiODE1MmJhNzYwOWMyOGJiYjE3ZWM5MjYzYmE3BjsAVEkiCmZsYXNoBjsARm86JUFjdGlvbkRpc3BhdGNoOjpGbGFzaDo6Rmxhc2hIYXNoCToKQHVzZWRvOghTZXQGOgpAaGFzaHsAOgxAY2xvc2VkRjoNQGZsYXNoZXN7BkkiDG1lc3NhZ2UGOwBGSSIKSGVsbG8GOwBGOglAbm93MA=='
       session = Marshal.load(Base64.decode64(rails_3_2_cookie))
       hash = Flash::FlashHash.from_session_value(session['flash'])
@@ -69,7 +71,7 @@ module ActionDispatch
 
     def test_from_session_value_on_json_serializer
       decrypted_data = "{ \"session_id\":\"d98bdf6d129618fc2548c354c161cfb5\", \"flash\":{\"discard\":[], \"flashes\":{\"message\":\"hey you\"}} }"
-      session = ActionDispatch::Cookies::JsonSerializer.load(decrypted_data)
+      session = ActiveSupport::JSON.decode(decrypted_data)
       hash = Flash::FlashHash.from_session_value(session['flash'])
 
       assert_equal({'discard' => %w[message], 'flashes' => { 'message' => 'hey you'}}, hash.to_session_value)
