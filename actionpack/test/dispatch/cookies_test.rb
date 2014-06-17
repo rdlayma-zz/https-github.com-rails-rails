@@ -63,6 +63,11 @@ class CookiesTest < ActionController::TestCase
       head :ok
     end
 
+    def set_signed_string_cookie
+      cookies.signed[:foo] = 'bar'
+      head :ok
+    end
+
     def raise_data_overflow
       cookies.signed[:foo] = 'bye!' * 1024
       head :ok
@@ -249,6 +254,22 @@ class CookiesTest < ActionController::TestCase
       @request.env["action_dispatch.secret_token"] = "12345678901234567890123456789"
       get :set_signed_cookie
     }
+  end
+
+  class ActionDispatch::Session::CustomJsonSerializer
+    def self.load(value)
+      JSON.load(value) + " and loaded"
+    end
+
+    def self.dump(value)
+      JSON.dump(value + " was dumped")
+    end
+  end
+
+  def test_signed_cookie_using_serializer_object
+    @request.env["action_dispatch.session_serializer"] = ActionDispatch::Session::CustomJsonSerializer
+    get :set_signed_string_cookie
+    assert_equal 'bar was dumped and loaded', @controller.send(:cookies).signed[:foo]
   end
 
   def test_cookie_with_all_domain_option
