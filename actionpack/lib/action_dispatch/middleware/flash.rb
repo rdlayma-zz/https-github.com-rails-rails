@@ -4,7 +4,7 @@ module ActionDispatch
     # read a notice you put there or <tt>flash["notice"] = "hello"</tt>
     # to put a new one.
     def flash
-      @env[Flash::KEY] ||= Flash::FlashHash.from_session_value(session["flash"]).tap(&:sweep)
+      @env[Flash::KEY] ||= Flash::FlashHash.from_session_value(session["flash"])
     end
   end
 
@@ -70,23 +70,24 @@ module ActionDispatch
 
     class FlashHash < Hash
       def self.from_session_value(value)
-        case value
-        when Hash # Rails 4.0
-          flashes = value['flashes'] || {}
-          flashes.stringify_keys!
-          discard = value['discard'] || []
-          discard = discard.map do |item|
-            item.kind_of?(Symbol) ? item.to_s : item
-          end
-          new_from_values(flashes, Set.new(discard))
-        else
-          new
-        end
+        flash = case value
+                when Hash # Rails 4.0
+                  flashes = value['flashes'] || {}
+                  flashes.stringify_keys!
+                  discard = value['discard'] || []
+                  discard = discard.map do |item|
+                    item.kind_of?(Symbol) ? item.to_s : item
+                  end
+                  new_from_values(flashes, Set.new(discard))
+                else
+                  new
+                end
+        flash.tap(&:sweep)
       end
 
       def to_session_value
         return nil if empty?
-        {'discard' => @used, 'flashes' => Hash[to_a]}
+        {'discard' => @used.to_a, 'flashes' => Hash[to_a]}
       end
 
       def initialize #:nodoc:
