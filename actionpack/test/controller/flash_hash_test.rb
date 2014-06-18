@@ -62,10 +62,9 @@ module ActionDispatch
     end
 
     def test_from_session_value
-      skip "Rails 3.2 cookie is invalid for 3.0 backport and we do not support old session cookies for 3.0"
-      rails_3_2_cookie = 'BAh7B0kiD3Nlc3Npb25faWQGOgZFRkkiJWY4ZTFiODE1MmJhNzYwOWMyOGJiYjE3ZWM5MjYzYmE3BjsAVEkiCmZsYXNoBjsARm86JUFjdGlvbkRpc3BhdGNoOjpGbGFzaDo6Rmxhc2hIYXNoCToKQHVzZWRvOghTZXQGOgpAaGFzaHsAOgxAY2xvc2VkRjoNQGZsYXNoZXN7BkkiDG1lc3NhZ2UGOwBGSSIKSGVsbG8GOwBGOglAbm93MA=='
-      session = Marshal.load(Base64.decode64(rails_3_2_cookie))
-      hash = Flash::FlashHash.from_session_value(session['flash'])
+      rails_3_0_marshaled_flash = 'BAhJQzolQWN0aW9uRGlzcGF0Y2g6OkZsYXNoOjpGbGFzaEhhc2h7BkkiDG1lc3NhZ2UGOgZFVEkiCkhlbGxvBjsGVAY6CkB1c2VkbzoIU2V0BjoKQGhhc2h7AA=='
+      flash = Marshal.load(Base64.decode64(rails_3_0_marshaled_flash))
+      hash = Flash::FlashHash.from_session_value(flash)
       assert_equal({'flashes' => {'message' => 'Hello'}, 'discard' => %w[message]}, hash.to_session_value)
     end
 
