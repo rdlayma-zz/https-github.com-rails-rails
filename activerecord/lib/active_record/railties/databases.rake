@@ -63,7 +63,7 @@ namespace :db do
       end
     rescue
       case config['adapter']
-      when /^(jdbc)?mysql/
+      when /mysql/
         if config['adapter'] =~ /jdbc/
           #FIXME After Jdbcmysql gives this class
           require 'active_record/railties/jdbcmysql_error'
@@ -94,7 +94,7 @@ namespace :db do
             $stderr.puts "(if you set the charset manually, make sure you have a matching collation)" if config['charset']
           end
         end
-      when /^(jdbc)?postgresql$/
+      when /postgresql/
         @encoding = config['encoding'] || ENV['CHARSET'] || 'utf8'
         begin
           ActiveRecord::Base.establish_connection(config.merge('database' => 'postgres', 'schema_search_path' => 'public'))
@@ -235,13 +235,13 @@ namespace :db do
   task :charset => :environment do
     config = ActiveRecord::Base.configurations[Rails.env || 'development']
     case config['adapter']
-    when /^(jdbc)?mysql/
+    when /mysql/
       ActiveRecord::Base.establish_connection(config)
       puts ActiveRecord::Base.connection.charset
-    when /^(jdbc)?postgresql$/
+    when /postgresql/
       ActiveRecord::Base.establish_connection(config)
       puts ActiveRecord::Base.connection.encoding
-    when /^(jdbc)?sqlite/
+    when /sqlite/
       ActiveRecord::Base.establish_connection(config)
       puts ActiveRecord::Base.connection.encoding
     else
@@ -253,7 +253,7 @@ namespace :db do
   task :collation => :environment do
     config = ActiveRecord::Base.configurations[Rails.env || 'development']
     case config['adapter']
-    when /^(jdbc)?mysql/
+    when /mysql/
       ActiveRecord::Base.establish_connection(config)
       puts ActiveRecord::Base.connection.collation
     else
@@ -356,10 +356,10 @@ namespace :db do
     task :dump => :environment do
       abcs = ActiveRecord::Base.configurations
       case abcs[Rails.env]["adapter"]
-      when /^(jdbc)?mysql/, "oci", "oracle"
+      when /mysql/, "oci", "oracle"
         ActiveRecord::Base.establish_connection(abcs[Rails.env])
         File.open("#{Rails.root}/db/#{Rails.env}_structure.sql", "w+") { |f| f << ActiveRecord::Base.connection.structure_dump }
-      when /^(jdbc)?postgresql$/
+      when /postgresql/
         ENV['PGHOST']     = abcs[Rails.env]["host"] if abcs[Rails.env]["host"]
         ENV['PGPORT']     = abcs[Rails.env]["port"].to_s if abcs[Rails.env]["port"]
         ENV['PGPASSWORD'] = abcs[Rails.env]["password"].to_s if abcs[Rails.env]["password"]
@@ -369,7 +369,7 @@ namespace :db do
         end
         `pg_dump -i -U "#{abcs[Rails.env]["username"]}" -s -x -O -f db/#{Rails.env}_structure.sql #{search_path} #{abcs[Rails.env]["database"]}`
         raise "Error dumping database" if $?.exitstatus == 1
-      when /^(jdbc)?sqlite/
+      when /sqlite/
         dbfile = abcs[Rails.env]["database"] || abcs[Rails.env]["dbfile"]
         `sqlite3 #{dbfile} .schema > db/#{Rails.env}_structure.sql`
       when "sqlserver"
@@ -404,18 +404,18 @@ namespace :db do
     task :clone_structure => [ "db:structure:dump", "db:test:purge" ] do
       abcs = ActiveRecord::Base.configurations
       case abcs["test"]["adapter"]
-      when /^(jdbc)?mysql/
+      when /mysql/
         ActiveRecord::Base.establish_connection(:test)
         ActiveRecord::Base.connection.execute('SET foreign_key_checks = 0')
         IO.readlines("#{Rails.root}/db/#{Rails.env}_structure.sql").join.split("\n\n").each do |table|
           ActiveRecord::Base.connection.execute(table)
         end
-      when /^(jdbc)?postgresql$/
+      when /postgresql/
         ENV['PGHOST']     = abcs["test"]["host"] if abcs["test"]["host"]
         ENV['PGPORT']     = abcs["test"]["port"].to_s if abcs["test"]["port"]
         ENV['PGPASSWORD'] = abcs["test"]["password"].to_s if abcs["test"]["password"]
         `psql -U "#{abcs["test"]["username"]}" -f #{Rails.root}/db/#{Rails.env}_structure.sql #{abcs["test"]["database"]}`
-      when /^(jdbc)?sqlite/
+      when /sqlite/
         dbfile = abcs["test"]["database"] || abcs["test"]["dbfile"]
         `sqlite3 #{dbfile} < #{Rails.root}/db/#{Rails.env}_structure.sql`
       when "sqlserver"
@@ -438,14 +438,14 @@ namespace :db do
     task :purge => :environment do
       abcs = ActiveRecord::Base.configurations
       case abcs["test"]["adapter"]
-      when /^(jdbc)?mysql/
+      when /mysql/
         ActiveRecord::Base.establish_connection(:test)
         ActiveRecord::Base.connection.recreate_database(abcs["test"]["database"], mysql_creation_options(abcs["test"]))
-      when /^(jdbc)?postgresql$/
+      when /postgresql/
         ActiveRecord::Base.clear_active_connections!
         drop_database(abcs['test'])
         create_database(abcs['test'])
-      when /^(jdbc)?sqlite/
+      when /sqlite/
         dbfile = abcs["test"]["database"] || abcs["test"]["dbfile"]
         File.delete(dbfile) if File.exist?(dbfile)
       when "sqlserver"
@@ -494,16 +494,16 @@ task 'test:prepare' => 'db:test:prepare'
 
 def drop_database(config)
   case config['adapter']
-  when /^(jdbc)?mysql/
+  when /mysql/
     ActiveRecord::Base.establish_connection(config)
     ActiveRecord::Base.connection.drop_database config['database']
-  when /^(jdbc)?sqlite/
+  when /sqlite/
     require 'pathname'
     path = Pathname.new(config['database'])
     file = path.absolute? ? path.to_s : File.join(Rails.root, path)
 
     FileUtils.rm(file)
-  when /^(jdbc)?postgresql$/
+  when /postgresql/
     ActiveRecord::Base.establish_connection(config.merge('database' => 'postgres', 'schema_search_path' => 'public'))
     ActiveRecord::Base.connection.drop_database config['database']
   end
