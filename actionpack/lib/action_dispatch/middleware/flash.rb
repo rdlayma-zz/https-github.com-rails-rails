@@ -79,9 +79,9 @@ module ActionDispatch
 
       def self.from_session_value(value)
         flash = case value
-                when FlashHash # Rails 3
+                when FlashHash # Before https://github.com/github/github-rails/pull/9
                   value
-                when Hash # Rails 4.0
+                when Hash # After, read plain Hash from the session
                   flashes = value['flashes'] || {}
                   flashes.stringify_keys!
                   discard = value['discard'] || []
