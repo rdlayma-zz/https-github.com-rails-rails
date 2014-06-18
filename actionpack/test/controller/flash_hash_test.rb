@@ -1,3 +1,5 @@
+# Upstream FlashHash tests from:
+# https://github.com/rails/rails/blob/a6ce984b49519de7701aa13d04300c9d03cf8f72/actionpack/test/controller/flash_hash_test.rb
 require 'abstract_unit'
 
 module ActionDispatch
