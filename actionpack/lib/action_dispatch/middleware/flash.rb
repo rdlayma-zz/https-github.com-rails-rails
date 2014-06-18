@@ -79,6 +79,8 @@ module ActionDispatch
 
       def self.from_session_value(value)
         flash = case value
+                when FlashHash # Rails 3
+                  value
                 when Hash # Rails 4.0
                   flashes = value['flashes'] || {}
                   flashes.stringify_keys!
