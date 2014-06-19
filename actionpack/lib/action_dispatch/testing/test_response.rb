@@ -60,7 +60,7 @@ module ActionDispatch
       # A shortcut to the flash. Returns an empty hash if no session flash exists.
       def flash
         ActiveSupport::Deprecation.warn("response.flash has been deprecated. Use request.flash instead", caller)
-        request.session['flash'] || {}
+        request.flash || {}
       end
 
       # Do we have a flash?

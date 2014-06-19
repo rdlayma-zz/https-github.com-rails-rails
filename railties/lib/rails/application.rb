@@ -172,7 +172,8 @@ module Rails
       @env_defaults ||= {
         "action_dispatch.parameter_filter" => config.filter_parameters,
         "action_dispatch.secret_token" => config.secret_token,
-        "action_dispatch.show_exceptions" => config.action_dispatch.show_exceptions
+        "action_dispatch.show_exceptions" => config.action_dispatch.show_exceptions,
+        "action_dispatch.session_serializer" => config.session_options[:serializer]
       }
     end
 

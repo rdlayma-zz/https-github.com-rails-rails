@@ -404,14 +404,14 @@ module ActionController
         @request.assign_parameters(@routes, @controller.class.name.underscore.sub(/_controller$/, ''), action.to_s, parameters)
 
         @request.session = ActionController::TestSession.new(session) unless session.nil?
-        @request.session["flash"] = @request.flash.update(flash || {})
-        @request.session["flash"].sweep
+        @request.flash.update(flash || {})
 
         @controller.request = @request
         @controller.params.merge!(parameters)
         build_request_uri(action, parameters)
         Base.class_eval { include Testing }
         @controller.process_with_new_base_test(@request, @response)
+        @request.session['flash'] = @request.flash.to_session_value
         @request.session.delete('flash') if @request.session['flash'].blank?
         @response
       end

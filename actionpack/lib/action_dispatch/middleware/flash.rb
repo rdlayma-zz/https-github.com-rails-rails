@@ -4,7 +4,7 @@ module ActionDispatch
     # read a notice you put there or <tt>flash["notice"] = "hello"</tt>
     # to put a new one.
     def flash
-      @env['action_dispatch.request.flash_hash'] ||= (session["flash"] || Flash::FlashHash.new)
+      @env[Flash::KEY] ||= Flash::FlashHash.from_session_value(session["flash"])
     end
   end
 
@@ -40,6 +40,8 @@ module ActionDispatch
   #
   # See docs on the FlashHash class for more details about the flash.
   class Flash
+    KEY = 'action_dispatch.request.flash_hash'.freeze
+
     class FlashNow #:nodoc:
       def initialize(flash)
         @flash = flash
@@ -67,26 +69,59 @@ module ActionDispatch
     end
 
     class FlashHash < Hash
+      def self.from_session_value(value)
+        flash = case value
+                when FlashHash # Before https://github.com/github/github-rails/pull/9
+                  value
+                when Hash # After, read plain Hash from the session
+                  flashes = value['flashes'] || {}
+                  flashes.stringify_keys!
+                  discard = value['discard'] || []
+                  discard = discard.map do |item|
+                    item.kind_of?(Symbol) ? item.to_s : item
+                  end
+                  new_from_values(flashes, Set.new(discard))
+                else
+                  new
+                end
+        flash.tap(&:sweep)
+      end
+
+      def to_session_value
+        return nil if empty?
+        {'discard' => @used.to_a, 'flashes' => Hash[to_a]}
+      end
+
       def initialize #:nodoc:
         super
-        @used = Set.new
+        @used = Set.new()
       end
 
       def []=(k, v) #:nodoc:
+        k = k.to_s
         keep(k)
-        super
+        super(k, v)
+      end
+
+      def [](k)
+        super(k.to_s)
+      end
+
+      def delete(k)
+        super(k.to_s)
       end
 
       def update(h) #:nodoc:
+        h.stringify_keys!
         h.keys.each { |k| keep(k) }
-        super
+        super(h)
       end
 
       alias :merge! :update
 
       def replace(h) #:nodoc:
         @used = Set.new
-        super
+        super(h.stringify_keys)
       end
 
       # Sets a flash that will not be available to the next action, only to the current.
@@ -168,6 +203,15 @@ module ActionDispatch
           Array(key || keys).each { |k| used ? @used << k : @used.delete(k) }
           return key ? self[key] : self
         end
+
+        def self.new_from_values(flashes, used)
+          new.tap do |flash_hash|
+            flashes.each do |k, v|
+              flash_hash[k] = v
+            end
+            flash_hash.instance_variable_set("@used", used)
+          end
+        end
     end
 
     def initialize(app)
@@ -175,20 +219,23 @@ module ActionDispatch
     end
 
     def call(env)
-      if (session = env['rack.session']) && (flash = session['flash'])
-        flash.sweep
-      end
-
       @app.call(env)
     ensure
       session    = env['rack.session'] || {}
-      flash_hash = env['action_dispatch.request.flash_hash']
+      flash_hash = env[KEY]
 
-      if flash_hash && (!flash_hash.empty? || session.key?('flash'))
-        session["flash"] = flash_hash
+      if flash_hash
+        if !flash_hash.empty? || session.key?('flash')
+          session["flash"] = flash_hash.to_session_value
+          new_hash = flash_hash.dup
+        else
+          new_hash = flash_hash
+        end
+
+        env[KEY] = new_hash
       end
 
-      if session.key?('flash') && session['flash'].empty?
+      if session.key?('flash') && session['flash'].nil?
         session.delete('flash')
       end
     end
