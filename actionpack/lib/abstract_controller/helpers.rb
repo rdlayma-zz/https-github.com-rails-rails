@@ -50,11 +50,19 @@ module AbstractController
         self._helper_methods += meths
 
         meths.each do |meth|
-          _helpers.class_eval <<-ruby_eval, __FILE__, __LINE__ + 1
-            def #{meth}(*args, &blk)
-              @_controller.send(%(#{meth}), *args, &blk)
-            end
-          ruby_eval
+          if meth =~ /\A[a-z_][a-zA-Z0-9_]*\z/
+            _helpers.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{meth}(*args, &blk)
+                @_controller.#{meth}(*args, &blk)
+              end
+            RUBY
+          else
+            _helpers.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              def #{meth}(*args, &blk)
+                @_controller.send(%s(#{meth}), *args, &blk)
+              end
+            RUBY
+          end
         end
       end
 
