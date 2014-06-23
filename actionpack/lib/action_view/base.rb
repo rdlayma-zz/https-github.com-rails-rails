@@ -191,7 +191,7 @@ module ActionView #:nodoc:
              :view_paths, :view_paths=, :with_fallbacks, :update_details, :with_layout_format, :to => :lookup_context
 
     delegate :request_forgery_protection_token, :template, :params, :session, :cookies, :response, :headers,
-             :flash, :action_name, :controller_name, :to => :controller
+             :flash, :action_name, :controller_name, :to => :@_controller
 
     delegate :logger, :to => :controller, :allow_nil => true
 

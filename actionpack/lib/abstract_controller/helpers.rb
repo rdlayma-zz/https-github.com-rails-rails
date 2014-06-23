@@ -52,7 +52,7 @@ module AbstractController
         meths.each do |meth|
           _helpers.class_eval <<-ruby_eval, __FILE__, __LINE__ + 1
             def #{meth}(*args, &blk)
-              controller.send(%(#{meth}), *args, &blk)
+              @_controller.send(%(#{meth}), *args, &blk)
             end
           ruby_eval
         end
