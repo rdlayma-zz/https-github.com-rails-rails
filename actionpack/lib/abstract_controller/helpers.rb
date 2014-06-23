@@ -50,7 +50,7 @@ module AbstractController
         self._helper_methods += meths
 
         meths.each do |meth|
-          if meth =~ /\A[a-z_][a-zA-Z0-9_]*\z/
+          if meth =~ /\A[a-z_][a-zA-Z0-9_]*\z/ && public_method_defined?(meth)
             _helpers.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               def #{meth}(*args, &blk)
                 @_controller.#{meth}(*args, &blk)
