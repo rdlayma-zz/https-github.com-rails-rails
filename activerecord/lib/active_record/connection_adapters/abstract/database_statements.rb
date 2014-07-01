@@ -371,7 +371,7 @@ module ActiveRecord
               begin
                 record.committed!
               rescue Exception => e
-                record.logger.error(e) if record.respond_to?(:logger) && record.logger
+                handle_commit_exceptions(record, e)
               end
             end
           end
@@ -384,6 +384,11 @@ module ActiveRecord
       def last_inserted_id(result)
         row = result.rows.first
         row && row.first
+      end
+
+      # Handle any exceptions caught trying to send the commit message to a record
+      def handle_commit_exceptions(record, e)
+        record.logger.error(e) if record.respond_to?(:logger) && record.logger
       end
     end
   end
