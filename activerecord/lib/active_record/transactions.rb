@@ -278,7 +278,7 @@ module ActiveRecord
 
     # Call the after_commit callbacks
     def committed! #:nodoc:
-      run_callbacks :commit
+      run_callbacks :commit if destroyed? || persisted?
     ensure
       @_start_transaction_state.clear
     end
