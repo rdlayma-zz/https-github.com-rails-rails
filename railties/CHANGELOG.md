@@ -1,12 +1,24 @@
-## Rails 3.1.8 (Aug 9, 2012)
+## Rails 3.1.11 (Feb 11, 2011) ##
 
 *   No changes.
 
-## Rails 3.1.7 (Jul 26, 2012)
+## Rails 3.1.10 (Jan 8, 2013) ##
 
 *   No changes.
 
-## Rails 3.1.6 (Jun 12, 2012)
+## Rails 3.1.9 (Jan 2, 2013) ##
+
+*   No changes.
+
+## Rails 3.1.8 (Aug 9, 2012) ##
+
+*   No changes.
+
+## Rails 3.1.7 (Jul 26, 2012) ##
+
+*   No changes.
+
+## Rails 3.1.6 (Jun 12, 2012) ##
 
 *   No changes.
 

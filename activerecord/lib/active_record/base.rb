@@ -1065,7 +1065,11 @@ Calling dynamic finder with less number of arguments than the number of attribut
                 eowarn
             end
             if match.finder?
-              options = arguments.extract_options!
+              options = if arguments.length > attribute_names.size
+                          arguments.extract_options!
+                        else
+                          {}
+                        end
               relation = options.any? ? scoped(options) : scoped
               relation.send :find_by_attributes, match, attribute_names, *arguments
             elsif match.instantiator?
@@ -2067,7 +2071,7 @@ MSG
         set_values = (1..3).collect{|position| values_hash_from_param[position].blank? ? 1 : values_hash_from_param[position]}
         begin
           Date.new(*set_values)
-        rescue ArgumentError => ex # if Date.new raises an exception on an invalid date
+        rescue ArgumentError # if Date.new raises an exception on an invalid date
           instantiate_time_object(name, set_values).to_date # we instantiate Time object and convert it back to a date thus using Time's logic in handling invalid dates
         end
       end

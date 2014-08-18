@@ -5,7 +5,7 @@ require 'set'
 require 'active_record/connection_adapters/statement_pool'
 require 'arel/visitors/bind_visitor'
 
-gem 'mysql', '~> 2.8.1'
+gem 'mysql', '~> 2.8'
 require 'mysql'
 
 class Mysql
@@ -283,8 +283,6 @@ module ActiveRecord
         if value.kind_of?(String) && column && column.type == :binary && column.class.respond_to?(:string_to_binary)
           s = column.class.string_to_binary(value).unpack("H*")[0]
           "x'#{s}'"
-        elsif value.kind_of?(BigDecimal)
-          value.to_s("F")
         else
           super
         end

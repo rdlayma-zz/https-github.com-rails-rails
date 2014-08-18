@@ -1,12 +1,24 @@
-## Rails 3.1.8 (Aug 9, 2012)
+## Rails 3.1.11 (Feb 11, 2011) ##
 
 *   No changes.
 
-## Rails 3.1.7 (Jul 26, 2012)
+## Rails 3.1.10 (Jan 8, 2013) ##
 
 *   No changes.
 
-## Rails 3.1.6 (Jun 12, 2012)
+## Rails 3.1.9 (Jan 2, 2013) ##
+
+*   No changes.
+
+## Rails 3.1.8 (Aug 9, 2012) ##
+
+*   No changes.
+
+## Rails 3.1.7 (Jul 26, 2012) ##
+
+*   No changes.
+
+## Rails 3.1.6 (Jun 12, 2012) ##
 
 *   No changes.
 
@@ -17,7 +29,6 @@
 ## Rails 3.1.1 (October 7, 2011) ##
 
 *   No changes
-
 
 ## Rails 3.1.0 (August 30, 2011) ##
 
@@ -343,3 +354,5 @@
 *   Base.site= accepts URIs. 200...400 are valid response codes. PUT and POST request bodies default to ''. *Jeremy Kemper*
 
 *   Initial checkin: object-oriented client for restful HTTP resources which follow the Rails convention. *David Heinemeier Hansson*
+
+Please check [3-0-stable](https://github.com/rails/rails/blob/3-0-stable/activeresource/CHANGELOG) for previous changes.
