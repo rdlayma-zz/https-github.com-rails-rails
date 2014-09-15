@@ -8,7 +8,6 @@ require 'rails/all'
 require "action_controller/railtie"
 require "action_mailer/railtie"
 require "active_resource/railtie"
-<%= comment_if :skip_sprockets %>require "sprockets/railtie"
 <%= comment_if :skip_test_unit %>require "rails/test_unit/railtie"
 <% end -%>
 
@@ -62,13 +61,5 @@ module <%= app_const_base %>
     # in your app. As such, your models will need to explicitly whitelist or blacklist accessible
     # parameters by using an attr_accessible or attr_protected declaration.
     <%= comment_if :skip_active_record %>config.active_record.whitelist_attributes = true
-
-<% unless options.skip_sprockets? -%>
-    # Enable the asset pipeline
-    config.assets.enabled = true
-
-    # Version of your assets, change this if you want to expire all your assets
-    config.assets.version = '1.0'
-<% end -%>
   end
 end

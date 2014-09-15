@@ -37,9 +37,6 @@ module Rails
         class_option :skip_active_record, :type => :boolean, :aliases => "-O", :default => false,
                                           :desc => "Skip Active Record files"
 
-        class_option :skip_sprockets,     :type => :boolean, :aliases => "-S", :default => false,
-                                          :desc => "Skip Sprockets files"
-
         class_option :database,           :type => :string, :aliases => "-d", :default => "sqlite3",
                                           :desc => "Preconfigure for selected database (options: #{DATABASES.join('/')})"
 
@@ -127,7 +124,7 @@ module Rails
       end
 
       def include_all_railties?
-        !options[:skip_active_record] && !options[:skip_test_unit] && !options[:skip_sprockets]
+        !options[:skip_active_record] && !options[:skip_test_unit]
       end
 
       def comment_if(value)
@@ -190,40 +187,6 @@ module Rails
         else
           "gem 'debugger'"
         end
-      end
-
-      def assets_gemfile_entry
-        return if options[:skip_sprockets]
-
-        gemfile = if options.dev? || options.edge?
-          <<-GEMFILE
-            # Gems used only for assets and not required
-            # in production environments by default.
-            group :assets do
-              gem 'sass-rails',   :git => 'git://github.com/rails/sass-rails.git', :branch => '3-2-stable'
-              gem 'coffee-rails', :git => 'git://github.com/rails/coffee-rails.git', :branch => '3-2-stable'
-
-              # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-              #{javascript_runtime_gemfile_entry}
-              gem 'uglifier', '>= 1.0.3'
-            end
-          GEMFILE
-        else
-          <<-GEMFILE
-            # Gems used only for assets and not required
-            # in production environments by default.
-            group :assets do
-              gem 'sass-rails',   '~> 3.2.3'
-              gem 'coffee-rails', '~> 3.2.1'
-
-              # See https://github.com/sstephenson/execjs#readme for more supported runtimes
-              #{javascript_runtime_gemfile_entry}
-              gem 'uglifier', '>= 1.0.3'
-            end
-          GEMFILE
-        end
-
-        gemfile.strip_heredoc.gsub(/^[ \t]*$/, '')
       end
 
       def javascript_gemfile_entry
