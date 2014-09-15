@@ -21,8 +21,11 @@ end
 # it being automatically loaded by sprockets
 gem 'uglifier', '>= 1.0.3', :require => false
 
+# execjs >= 2.1.0 doesn't work with Ruby 1.8
+gem 'execjs', '< 2.1.0'
+
 gem 'rake', '>= 0.8.7'
-gem 'mocha', '>= 0.13.0', :require => false
+gem 'mocha', '~> 0.14', :require => false
 
 group :doc do
   # The current sdoc cannot generate GitHub links due

@@ -1,9 +1,23 @@
+## Rails 3.2.19 (Jul 2, 2014) ##
+
 *   Fix regression when using `ActionView::Helpers::TranslationHelper#translate` with
     `options[:raise]`.
 
     This regression was introduced at ec16ba75a5493b9da972eea08bae630eba35b62f.
 
     *Shota Fukumori (sora_h)*
+
+
+## Rails 3.2.18 (May 6, 2014) ##
+
+*   Only accept actions without File::SEPARATOR in the name.
+
+    This will avoid directory traversal in implicit render.
+
+    Fixes: CVE-2014-0130
+
+    *Rafael Mendonça França*
+
 
 ## Rails 3.2.17 (Feb 18, 2014) ##
 
