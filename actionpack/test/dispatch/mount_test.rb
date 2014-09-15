@@ -14,17 +14,17 @@ class TestRoutingMount < ActionDispatch::IntegrationTest
   end
 
   Router.draw do
-    SprocketsApp = lambda { |env|
+    RackApp = lambda { |env|
       [200, {"Content-Type" => "text/html"}, ["#{env["SCRIPT_NAME"]} -- #{env["PATH_INFO"]}"]]
     }
 
-    mount SprocketsApp, :at => "/sprockets"
-    mount SprocketsApp => "/shorthand"
+    mount RackApp, :at => "/sprockets"
+    mount RackApp => "/shorthand"
 
     mount FakeEngine, :at => "/fakeengine"
 
     scope "/its_a" do
-      mount SprocketsApp, :at => "/sprocket"
+      mount RackApp, :at => "/sprocket"
     end
   end
 

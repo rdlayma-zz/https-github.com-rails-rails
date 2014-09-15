@@ -5,7 +5,7 @@ require 'controller/fake_controllers'
 require 'active_support/core_ext/object/inclusion'
 
 class TestRoutingMapper < ActionDispatch::IntegrationTest
-  SprocketsApp = lambda { |env|
+  RackApp = lambda { |env|
     [200, {"Content-Type" => "text/html"}, ["javascripts"]]
   }
 
@@ -284,7 +284,7 @@ class TestRoutingMapper < ActionDispatch::IntegrationTest
         get "products/list"
       end
 
-      match 'sprockets.js' => ::TestRoutingMapper::SprocketsApp
+      match 'sprockets.js' => ::TestRoutingMapper::RackApp
 
       match 'people/:id/update', :to => 'people#update', :as => :update_person
       match '/projects/:project_id/people/:id/update', :to => 'people#update', :as => :update_project_person
