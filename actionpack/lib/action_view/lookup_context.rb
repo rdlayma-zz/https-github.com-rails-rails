@@ -165,8 +165,6 @@ module ActionView
       # name instead of the prefix.
       def normalize_name(name, prefixes) #:nodoc:
         name  = name.to_s.sub(handlers_regexp) do |match|
-          ActiveSupport::Deprecation.warn "Passing a template handler in the template name is deprecated. " \
-            "You can simply remove the handler name or pass render :handlers => [:#{match[1..-1]}] instead.", caller
           ""
         end
 
