@@ -63,13 +63,6 @@ module ActionDispatch
       assert_equal(nil, @hash.to_session_value)
     end
 
-    def test_from_session_value
-      rails_3_0_marshaled_flash = 'BAhJQzolQWN0aW9uRGlzcGF0Y2g6OkZsYXNoOjpGbGFzaEhhc2h7BkkiDG1lc3NhZ2UGOgZFVEkiCkhlbGxvBjsGVAY6CkB1c2VkbzoIU2V0BjoKQGhhc2h7AA=='
-      flash = Marshal.load(Base64.decode64(rails_3_0_marshaled_flash))
-      hash = Flash::FlashHash.from_session_value(flash)
-      assert_equal({'flashes' => {'message' => 'Hello'}, 'discard' => %w[message]}, hash.to_session_value)
-    end
-
     def test_from_session_value_on_json_serializer
       decrypted_data = "{ \"session_id\":\"d98bdf6d129618fc2548c354c161cfb5\", \"flash\":{\"discard\":[], \"flashes\":{\"message\":\"hey you\"}} }"
       session = ActiveSupport::JSON.decode(decrypted_data)
