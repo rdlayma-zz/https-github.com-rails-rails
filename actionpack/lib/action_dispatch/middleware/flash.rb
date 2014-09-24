@@ -272,7 +272,7 @@ module ActionDispatch
         env[KEY] = new_hash
       end
 
-      if session.key?('flash') && session['flash'].blank?
+      if session.key?('flash') && session['flash'].empty?
         session.delete('flash')
       end
     end
