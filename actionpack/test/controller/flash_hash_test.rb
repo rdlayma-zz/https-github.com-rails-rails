@@ -43,7 +43,6 @@ module ActionDispatch
       @hash['foo'] = 'bar'
       assert_equal({'foo' => 'bar'}, @hash.to_hash)
 
-      skip "For Rails 3 we are modifying the actual hash, not a dup of the @flashes ivar"
       @hash.to_hash['zomg'] = 'aaron'
       assert !@hash.key?('zomg')
       assert_equal({'foo' => 'bar'}, @hash.to_hash)
@@ -67,6 +66,7 @@ module ActionDispatch
       decrypted_data = "{ \"session_id\":\"d98bdf6d129618fc2548c354c161cfb5\", \"flash\":{\"discard\":[], \"flashes\":{\"message\":\"hey you\"}} }"
       session = ActiveSupport::JSON.decode(decrypted_data)
       hash = Flash::FlashHash.from_session_value(session['flash'])
+      hash.sweep
 
       assert_equal({'discard' => %w[message], 'flashes' => { 'message' => 'hey you'}}, hash.to_session_value)
       assert_equal "hey you", hash[:message]

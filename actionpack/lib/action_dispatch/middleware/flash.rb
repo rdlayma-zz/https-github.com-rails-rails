@@ -78,32 +78,23 @@ module ActionDispatch
       include Enumerable
 
       def self.from_session_value(value)
-        flash = case value
-                when FlashHash # Before https://github.com/github/github-rails/pull/9
-                  value
-                when Hash # After, read plain Hash from the session
-                  flashes = value['flashes'] || {}
-                  flashes.stringify_keys!
-                  discard = value['discard'] || []
-                  discard = discard.map do |item|
-                    item.kind_of?(Symbol) ? item.to_s : item
-                  end
-                  new_from_values(flashes, Set.new(discard))
-                else
-                  new
-                end
-        flash.tap(&:sweep)
+        case value
+        when Hash # After github/github-rails#9, only plain Hashes are in the session
+          new(value['flashes'], value['discard'])
+        else
+          new
+        end
       end
 
       def to_session_value
         return nil if empty?
-        {'discard' => @used.to_a, 'flashes' => Hash[to_a]}
+        {'discard' => @used.to_a, 'flashes' => @flashes}
       end
 
-      def initialize #:nodoc:
-        @used    = Set.new
+      def initialize(flashes = {}, discard = []) #:nodoc:
+        @used    = Set.new(discard)
         @closed  = false
-        @flashes = {}
+        @flashes = flashes
         @now     = nil
       end
 
@@ -253,15 +244,6 @@ module ActionDispatch
           Array(key || keys).each { |k| used ? @used << k : @used.delete(k) }
           return key ? self[key] : self
         end
-
-        def self.new_from_values(flashes, used)
-          new.tap do |flash_hash|
-            flashes.each do |k, v|
-              flash_hash[k] = v
-            end
-            flash_hash.instance_variable_set("@used", used)
-          end
-        end
     end
 
     def initialize(app)
@@ -269,6 +251,11 @@ module ActionDispatch
     end
 
     def call(env)
+      if (session = env['rack.session']) && (flash = Flash::FlashHash.from_session_value(session["flash"]))
+        flash.sweep
+        env[KEY] = flash
+      end
+
       @app.call(env)
     ensure
       session    = env['rack.session'] || {}
@@ -285,7 +272,7 @@ module ActionDispatch
         env[KEY] = new_hash
       end
 
-      if session.key?('flash') && session['flash'].nil?
+      if session.key?('flash') && session['flash'].blank?
         session.delete('flash')
       end
     end
