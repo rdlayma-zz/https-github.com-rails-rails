@@ -81,6 +81,7 @@ module ActionDispatch
   class Cookies
     HTTP_HEADER = "Set-Cookie".freeze
     TOKEN_KEY   = "action_dispatch.secret_token".freeze
+    SESSION_SERIALIZER = "action_dispatch.session_serializer".freeze
 
     # Raised when storing more than 4K of session data.
     class CookieOverflow < StandardError; end
@@ -106,13 +107,14 @@ module ActionDispatch
         secret = request.env[TOKEN_KEY]
         host = request.host
         secure = request.ssl?
+        serializer = request.env[SESSION_SERIALIZER]
 
-        new(secret, host, secure).tap do |hash|
+        new(secret, host, secure, serializer).tap do |hash|
           hash.update(request.cookies)
         end
       end
 
-      def initialize(secret = nil, host = nil, secure = false)
+      def initialize(secret = nil, host = nil, secure = false, serializer = nil)
         @secret = secret
         @set_cookies = {}
         @delete_cookies = {}
@@ -120,6 +122,7 @@ module ActionDispatch
         @secure = secure
         @closed = false
         @cookies = {}
+        @serializer = serializer
       end
 
       def each(&block)
@@ -211,7 +214,7 @@ module ActionDispatch
       #   cookies.permanent.signed[:remember_me] = current_user.id
       #   # => Set-Cookie: remember_me=BAhU--848956038e692d7046deab32b7131856ab20e14e; path=/; expires=Sun, 16-Dec-2029 03:24:16 GMT
       def permanent
-        @permanent ||= PermanentCookieJar.new(self, @secret)
+        @permanent ||= PermanentCookieJar.new(self, @secret, @serializer)
       end
 
       # Returns a jar that'll automatically generate a signed representation of cookie value and verify it when reading from
@@ -228,7 +231,7 @@ module ActionDispatch
       #
       #   cookies.signed[:discount] # => 45
       def signed
-        @signed ||= SignedCookieJar.new(self, @secret)
+        @signed ||= SignedCookieJar.new(self, @secret, @serializer)
       end
 
       def write(headers)
@@ -252,8 +255,8 @@ module ActionDispatch
     end
 
     class PermanentCookieJar < CookieJar #:nodoc:
-      def initialize(parent_jar, secret)
-        @parent_jar, @secret = parent_jar, secret
+      def initialize(parent_jar, secret, serializer)
+        @parent_jar, @secret, @serializer = parent_jar, secret, serializer
       end
 
       def []=(key, options)
@@ -268,7 +271,7 @@ module ActionDispatch
       end
 
       def signed
-        @signed ||= SignedCookieJar.new(self, @secret)
+        @signed ||= SignedCookieJar.new(self, @secret, @serializer)
       end
 
       def method_missing(method, *arguments, &block)
@@ -280,10 +283,10 @@ module ActionDispatch
       MAX_COOKIE_SIZE = 4096 # Cookies can typically store 4096 bytes.
       SECRET_MIN_LENGTH = 30 # Characters
 
-      def initialize(parent_jar, secret)
+      def initialize(parent_jar, secret, serializer)
         ensure_secret_secure(secret)
         @parent_jar = parent_jar
-        @verifier   = ActiveSupport::MessageVerifier.new(secret)
+        @verifier   = ActiveSupport::MessageVerifier.new(secret, :serializer => serializer)
       end
 
       def [](name)

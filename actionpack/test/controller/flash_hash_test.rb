@@ -1,3 +1,5 @@
+# Upstream FlashHash tests from:
+# https://github.com/rails/rails/blob/a6ce984b49519de7701aa13d04300c9d03cf8f72/actionpack/test/controller/flash_hash_test.rb
 require 'abstract_unit'
 
 module ActionDispatch
@@ -46,6 +48,31 @@ module ActionDispatch
       assert_equal({'foo' => 'bar'}, @hash.to_hash)
     end
 
+    def test_to_session_value
+      @hash['foo'] = 'bar'
+      assert_equal({'flashes' => {'foo' => 'bar'}, 'discard' => []}, @hash.to_session_value)
+
+      @hash.discard('foo')
+      assert_equal({'flashes' => {'foo' => 'bar'}, 'discard' => %w[foo]}, @hash.to_session_value)
+
+      @hash.now['qux'] = 1
+      assert_equal({'flashes' => {'foo' => 'bar', 'qux' => 1}, 'discard' => %w[foo qux]}, @hash.to_session_value)
+
+      @hash.sweep
+      assert_equal(nil, @hash.to_session_value)
+    end
+
+    def test_from_session_value_on_json_serializer
+      decrypted_data = "{ \"session_id\":\"d98bdf6d129618fc2548c354c161cfb5\", \"flash\":{\"discard\":[], \"flashes\":{\"message\":\"hey you\"}} }"
+      session = ActiveSupport::JSON.decode(decrypted_data)
+      hash = Flash::FlashHash.from_session_value(session['flash'])
+      hash.sweep
+
+      assert_equal({'discard' => %w[message], 'flashes' => { 'message' => 'hey you'}}, hash.to_session_value)
+      assert_equal "hey you", hash[:message]
+      assert_equal "hey you", hash["message"]
+    end
+
     def test_empty?
       assert @hash.empty?
       @hash['zomg'] = 'bears'
@@ -75,6 +102,7 @@ module ActionDispatch
     def test_discard_no_args
       @hash['hello'] = 'world'
       @hash.discard
+
       @hash.sweep
       assert_equal({}, @hash.to_hash)
     end
@@ -83,8 +111,88 @@ module ActionDispatch
       @hash['hello'] = 'world'
       @hash['omg']   = 'world'
       @hash.discard 'hello'
+
       @hash.sweep
       assert_equal({'omg' => 'world'}, @hash.to_hash)
+    end
+
+    def test_keep_sweep
+      @hash['hello'] = 'world'
+
+      @hash.sweep
+      assert_equal({'hello' => 'world'}, @hash.to_hash)
+    end
+
+    def test_update_sweep
+      @hash['hello'] = 'world'
+      @hash.update({'hi' => 'mom'})
+
+      @hash.sweep
+      assert_equal({'hello' => 'world', 'hi' => 'mom'}, @hash.to_hash)
+    end
+
+    def test_update_delete_sweep
+      @hash['hello'] = 'world'
+      @hash.delete 'hello'
+      @hash.update({'hello' => 'mom'})
+
+      @hash.sweep
+      assert_equal({'hello' => 'mom'}, @hash.to_hash)
+    end
+
+    def test_delete_sweep
+      @hash['hello'] = 'world'
+      @hash['hi']    = 'mom'
+      @hash.delete 'hi'
+
+      @hash.sweep
+      assert_equal({'hello' => 'world'}, @hash.to_hash)
+    end
+
+    def test_clear_sweep
+      @hash['hello'] = 'world'
+      @hash.clear
+
+      @hash.sweep
+      assert_equal({}, @hash.to_hash)
+    end
+
+    def test_replace_sweep
+      @hash['hello'] = 'world'
+      @hash.replace({'hi' => 'mom'})
+
+      @hash.sweep
+      assert_equal({'hi' => 'mom'}, @hash.to_hash)
+    end
+
+    def test_discard_then_add
+      @hash['hello'] = 'world'
+      @hash['omg']   = 'world'
+      @hash.discard 'hello'
+      @hash['hello'] = 'world'
+
+      @hash.sweep
+      assert_equal({'omg' => 'world', 'hello' => 'world'}, @hash.to_hash)
+    end
+
+    def test_keep_all_sweep
+      @hash['hello'] = 'world'
+      @hash['omg']   = 'world'
+      @hash.discard 'hello'
+      @hash.keep
+
+      @hash.sweep
+      assert_equal({'omg' => 'world', 'hello' => 'world'}, @hash.to_hash)
+    end
+
+    def test_double_sweep
+      @hash['hello'] = 'world'
+      @hash.sweep
+
+      assert_equal({'hello' => 'world'}, @hash.to_hash)
+
+      @hash.sweep
+      assert_equal({}, @hash.to_hash)
     end
   end
 end
