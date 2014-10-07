@@ -2,11 +2,11 @@ module ActionView
   # = Action View Cache Helper
   module Helpers
     module CacheHelper
-      # This helper exposes a method for caching fragments of a view 
+      # This helper exposes a method for caching fragments of a view
       # rather than an entire action or page. This technique is useful
       # caching pieces like menus, lists of newstopics, static HTML
       # fragments, and so on. This method takes a block that contains
-      # the content you wish to cache. 
+      # the content you wish to cache.
       #
       # See ActionController::Caching::Fragments for usage instructions.
       #
@@ -23,7 +23,7 @@ module ActionView
       #      <p>Hello users!  Welcome to our website!</p>
       #   <% end %>
       #
-      # Static content with embedded ruby content can be cached as 
+      # Static content with embedded ruby content can be cached as
       # well:
       #
       #    <% cache do %>
@@ -49,10 +49,11 @@ module ActionView
         else
           # VIEW TODO: Make #capture usable outside of ERB
           # This dance is needed because Builder can't use capture
-          pos = output_buffer.length
+          pos = output_buffer.bytesize
           yield
           output_safe = output_buffer.html_safe?
-          fragment = output_buffer.slice!(pos..-1)
+          fragment = output_buffer.byteslice(pos..-1)
+          output_buffer = output_buffer.byteslice(0...pos)
           if output_safe
             self.output_buffer = output_buffer.class.new(output_buffer)
           end
