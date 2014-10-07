@@ -53,7 +53,7 @@ module ActionView
           yield
           output_safe = output_buffer.html_safe?
           fragment = output_buffer.byteslice(pos..-1)
-          output_buffer = output_buffer.byteslice(0...pos)
+          self.output_buffer = output_buffer.byteslice(0...pos)
           if output_safe
             self.output_buffer = output_buffer.class.new(output_buffer)
           end
