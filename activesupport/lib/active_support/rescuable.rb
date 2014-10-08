@@ -1,6 +1,5 @@
 require 'active_support/concern'
 require 'active_support/core_ext/class/attribute'
-require 'active_support/core_ext/proc'
 require 'active_support/core_ext/string/inflections'
 require 'active_support/core_ext/array/extract_options'
 
@@ -108,7 +107,11 @@ module ActiveSupport
       when Symbol
         method(rescuer)
       when Proc
-        rescuer.bind(self)
+        if rescuer.arity == 0
+          Proc.new { instance_exec(&rescuer) }
+        else
+          Proc.new { |_exception| instance_exec(_exception, &rescuer) }
+        end
       end
     end
   end
