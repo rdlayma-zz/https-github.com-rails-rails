@@ -2,7 +2,6 @@ require 'mail'
 require 'action_mailer/collector'
 require 'active_support/core_ext/array/wrap'
 require 'active_support/core_ext/object/blank'
-require 'active_support/core_ext/proc'
 require 'active_support/core_ext/string/inflections'
 require 'active_support/core_ext/hash/except'
 require 'active_support/core_ext/module/anonymous'
@@ -627,7 +626,7 @@ module ActionMailer #:nodoc:
 
       # Call all the procs (if any)
       default_values = self.class.default.merge(self.class.default) do |k,v|
-        v.respond_to?(:call) ? v.bind(self).call : v
+        v.respond_to?(:call) ? instance_eval(&v) : v
       end
 
       # Handle defaults
