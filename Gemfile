@@ -31,14 +31,6 @@ local_gemfile = File.dirname(__FILE__) + "/.Gemfile"
 instance_eval File.read local_gemfile if File.exist? local_gemfile
 
 group :test do
-  platforms :mri_19 do
-    gem 'ruby-prof', '~> 0.11.2'
-  end
-
-  platforms :mri_19, :mri_20 do
-    gem 'debugger'
-  end
-
   gem 'benchmark-ips'
 end
 
