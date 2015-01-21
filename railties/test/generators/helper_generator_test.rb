@@ -23,14 +23,12 @@ class HelperGeneratorTest < Rails::Generators::TestCase
     assert_match(/rspec \[not found\]/, content)
   end
 
-  def test_check_class_collision
-    skip "errors out"
+  def skip_test_check_class_collision
     content = capture(:stderr){ run_generator ["object"] }
     assert_match(/The name 'ObjectHelper' is either already used in your application or reserved/, content)
   end
 
-  def test_check_class_collision_on_tests
-    skip "errors out"
+  def skip_test_check_class_collision_on_tests
     content = capture(:stderr){ run_generator ["another_object"] }
     assert_match(/The name 'AnotherObjectHelperTest' is either already used in your application or reserved/, content)
   end
