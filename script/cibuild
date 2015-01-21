@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-export PATH="/usr/share/rbenv/versions/2.1.2-github/bin:$PATH"
+export PATH="/usr/share/rbenv/versions/2.1.5-github/bin:$PATH"
 
 ruby -v
 

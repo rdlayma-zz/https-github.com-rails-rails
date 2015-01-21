@@ -285,9 +285,7 @@ class ModelGeneratorTest < Rails::Generators::TestCase
     assert_no_file "test/fixtures/accounts.yml"
   end
 
-  def test_check_class_collision
-    skip "errors out"
-
+  def skip_test_check_class_collision
     content = capture(:stderr){ run_generator ["object"] }
     assert_match(/The name 'Object' is either already used in your application or reserved/, content)
   end
