@@ -17,6 +17,11 @@ else
   gem 'journey'
 end
 
+if RUBY_VERSION < '1.9.3'
+  gem 'i18n', '~> 0.6.11'
+end
+gem 'test-unit', '~> 3.0'
+
 # This needs to be with require false to avoid
 # it being automatically loaded by sprockets
 gem 'uglifier', '>= 1.0.3', :require => false
@@ -56,7 +61,11 @@ platforms :ruby do
   gem 'sqlite3', '~> 1.3.5'
 
   group :db do
-    gem 'pg', '>= 0.11.0'
+    if RUBY_VERSION < '1.9.3'
+      gem 'pg', '>= 0.11.0', '< 0.18'
+    else
+      gem 'pg', '>= 0.11.0'
+    end
     gem 'mysql', '>= 2.8.1'
     gem 'mysql2', '>= 0.3.10'
   end
