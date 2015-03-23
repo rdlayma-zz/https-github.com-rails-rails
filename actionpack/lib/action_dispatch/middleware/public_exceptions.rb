@@ -8,7 +8,7 @@ module ActionDispatch
     end
 
     def call(env)
-      status      = env["PATH_INFO"][1..-1]
+      status      = env["PATH_INFO"][1..-1].to_i
       locale_path = "#{public_path}/#{status}.#{I18n.locale}.html" if I18n.locale
       path        = "#{public_path}/#{status}.html"
 
