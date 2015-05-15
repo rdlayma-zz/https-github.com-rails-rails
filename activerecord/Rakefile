@@ -24,18 +24,12 @@ task :default => :test
 
 desc 'Run mysql, mysql2, sqlite, and postgresql tests'
 task :test do
-  tasks = defined?(JRUBY_VERSION) ?
-    %w(test_jdbcmysql test_jdbcsqlite3 test_jdbcpostgresql) :
-    %w(test_mysql test_mysql2 test_sqlite3 test_postgresql)
-  run_without_aborting(*tasks)
+  run_without_aborting("test_mysql2")
 end
 
 namespace :test do
   task :isolated do
-    tasks = defined?(JRUBY_VERSION) ?
-      %w(isolated_test_jdbcmysql isolated_test_jdbcsqlite3 isolated_test_jdbcpostgresql) :
-      %w(isolated_test_mysql isolated_test_mysql2 isolated_test_sqlite3 isolated_test_postgresql)
-    run_without_aborting(*tasks)
+    run_without_aborting("isolated_test_mysql2")
   end
 end
 
@@ -44,7 +38,7 @@ namespace :db do
   task :drop => ['mysql:drop_databases', 'postgresql:drop_databases']
 end
 
-%w( mysql mysql2 postgresql sqlite3 sqlite3_mem firebird db2 oracle sybase openbase frontbase jdbcmysql jdbcpostgresql jdbcsqlite3 jdbcderby jdbch2 jdbchsqldb ).each do |adapter|
+%w(mysql2).each do |adapter|
   Rake::TestTask.new("test_#{adapter}") { |t|
     adapter_short = adapter == 'db2' ? adapter : adapter[/^[a-z0-9]+/]
     t.libs << 'test'
