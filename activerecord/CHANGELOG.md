@@ -1,8 +1,40 @@
+## Rails 4.0.13 (January 6, 2015) ##
+
+*   Renaming a table in pg also renames the primary key index.
+
+    Fixes #12856
+
+    *Sean Griffin*
+
+*   Make it possible to access fixtures excluded by a `default_scope`.
+
+    *Yves Senn*
+
+*   `timestamps` and `add_timestamps` passes additional options along.
+    (like `null: false`)
+
+    Closes #17624.
+
+    *Yves Senn*
+
+
+## Rails 4.0.12 (November 16, 2014) ##
+
 *   Cache `CollectionAssociation#reader` proxies separately before and after
     the owner has been saved so that the proxy is not cached without the
     owner's id.
 
     *Ben Woosley*
+
+
+## Rails 4.0.11.1 (November 19, 2014) ##
+
+*No changes*
+
+
+## Rails 4.0.11 (September 11, 2014) ##
+
+*No changes*
 
 
 ## Rails 4.0.10 (September 11, 2014) ##
