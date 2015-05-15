@@ -34,8 +34,8 @@ namespace :test do
 end
 
 namespace :db do
-  task :create => ['mysql:build_databases', 'postgresql:build_databases']
-  task :drop => ['mysql:drop_databases', 'postgresql:drop_databases']
+  task :create => ['mysql:build_databases']
+  task :drop => ['mysql:drop_databases']
 end
 
 %w(mysql2).each do |adapter|
