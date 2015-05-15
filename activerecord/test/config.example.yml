@@ -75,10 +75,10 @@ connections:
 
   mysql:
     arunit:
-      username: rails
+      username: root
       encoding: utf8
     arunit2:
-      username: rails
+      username: root
       encoding: utf8
 
   mysql2:

@@ -6,5 +6,5 @@ ruby -v
 
 bundle --local --path vendor/gems/
 
-(cd activerecord; bundle exec rake db:create)
+(cd activerecord; bundle exec rake mysql:rebuild_databases)
 bundle exec rake test
