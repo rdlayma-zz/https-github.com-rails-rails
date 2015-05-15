@@ -8,7 +8,7 @@ bundle --local --path vendor/gems/
 
 (
     cd activerecord
-    cp config.example.yml config.yml
+    cp test/config.example.yml test/config.yml
     bundle exec rake mysql:rebuild_databases
 )
 
