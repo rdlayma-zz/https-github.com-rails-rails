@@ -470,8 +470,8 @@ class RequestTest < ActiveSupport::TestCase
     begin
       request = stub_request(mock_rack_env)
       request.parameters
-    rescue TypeError
-      # rack will raise a TypeError when parsing this query string
+    rescue Rack::Utils::ParameterTypeError
+      # rack will raise a Rack::Utils::ParameterTypeError when parsing this query string
     end
     assert_equal({}, request.parameters)
   end
