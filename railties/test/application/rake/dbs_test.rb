@@ -31,12 +31,12 @@ module ApplicationTests
         Dir.chdir(app_path) do
           output = `bundle exec rake db:create`
           assert_equal output, ""
-          assert File.exists?(expected[:database])
+          assert File.exist?(expected[:database])
           assert_equal expected[:database],
                         ActiveRecord::Base.connection_config[:database]
           output = `bundle exec rake db:drop`
           assert_equal output, ""
-          assert !File.exists?(expected[:database])
+          assert !File.exist?(expected[:database])
         end
       end
 
@@ -82,7 +82,7 @@ module ApplicationTests
           `rake db:migrate`
           `rake db:schema:dump`
 
-          assert File.exists?("db/schema.rb"), "db/schema.rb doesn't exist"
+          assert File.exist?("db/schema.rb"), "db/schema.rb doesn't exist"
 
           schema_dump = File.read("db/schema.rb")
 
@@ -131,7 +131,7 @@ module ApplicationTests
           `bundle exec rake db:migrate`
           `bundle exec rake db:structure:dump`
 
-          assert File.exists?("db/structure.sql"), "db/structure.sql doesn't exist"
+          assert File.exist?("db/structure.sql"), "db/structure.sql doesn't exist"
 
           structure_dump = File.read("db/structure.sql")
 
