@@ -19,11 +19,11 @@ module Rails
     end
 
     def self.in_rails_application?
-      File.exists?(SCRIPT_RAILS)
+      File.exist?(SCRIPT_RAILS)
     end
 
     def self.in_rails_application_subdirectory?(path = Pathname.new(Dir.pwd))
-      File.exists?(File.join(path, SCRIPT_RAILS)) || !path.root? && in_rails_application_subdirectory?(path.parent)
+      File.exist?(File.join(path, SCRIPT_RAILS)) || !path.root? && in_rails_application_subdirectory?(path.parent)
     end
   end
 end

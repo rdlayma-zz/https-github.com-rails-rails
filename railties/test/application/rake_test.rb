@@ -148,7 +148,7 @@ module ApplicationTests
         `bundle exec rake db:migrate` # ensure we have a schema_migrations table to dump
         `bundle exec rake db:structure:dump DB_STRUCTURE=db/my_structure.sql`
       end
-      assert File.exists?(File.join(app_path, 'db', 'my_structure.sql'))
+      assert File.exist?(File.join(app_path, 'db', 'my_structure.sql'))
     end
 
     def test_rake_dump_structure_should_be_called_twice_when_migrate_redo
@@ -167,10 +167,10 @@ module ApplicationTests
       Dir.chdir(app_path) do
         `bundle exec rake rails:templates:copy`
         %w(controller mailer scaffold).each do |dir|
-          assert File.exists?(File.join(app_path, 'lib', 'templates', 'erb', dir))
+          assert File.exist?(File.join(app_path, 'lib', 'templates', 'erb', dir))
         end
         %w(controller helper scaffold_controller assets).each do |dir|
-          assert File.exists?(File.join(app_path, 'lib', 'templates', 'rails', dir))
+          assert File.exist?(File.join(app_path, 'lib', 'templates', 'rails', dir))
         end
       end
     end

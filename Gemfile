@@ -43,7 +43,7 @@ end
 gem 'memcache-client', '>= 1.8.5'
 
 # Add your own local bundler stuff
-instance_eval File.read '.Gemfile' if File.exists? '.Gemfile'
+instance_eval File.read '.Gemfile' if File.exist? '.Gemfile'
 
 platforms :mri do
   group :test do

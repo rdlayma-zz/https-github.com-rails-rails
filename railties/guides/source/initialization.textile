@@ -100,15 +100,15 @@ This method will first check if the current working directory (+cwd+) is a Rails
 
 <ruby>
 def self.in_rails_application?
-  File.exists?(SCRIPT_RAILS)
+  File.exist?(SCRIPT_RAILS)
 end
 </ruby>
 
-The +SCRIPT_RAILS+ constant defined earlier is used here, with +File.exists?+ checking for its presence in the current directory. If this method returns +false+ then +in_rails_application_subdirectory?+ will be used:
+The +SCRIPT_RAILS+ constant defined earlier is used here, with +File.exist?+ checking for its presence in the current directory. If this method returns +false+ then +in_rails_application_subdirectory?+ will be used:
 
 <ruby>
 def self.in_rails_application_subdirectory?(path = Pathname.new(Dir.pwd))
-  File.exists?(File.join(path, SCRIPT_RAILS)) || !path.root? && in_rails_application_subdirectory?(path.parent)
+  File.exist?(File.join(path, SCRIPT_RAILS)) || !path.root? && in_rails_application_subdirectory?(path.parent)
 end
 </ruby>
 
@@ -205,7 +205,7 @@ when 'server'
   # Change to the application's path if there is no config.ru file in current dir.
   # This allows us to run script/rails server from other directories, but still get
   # the main config.ru and properly set the tmp directory.
-  Dir.chdir(File.expand_path('../../', APP_PATH)) unless File.exists?(File.expand_path("config.ru"))
+  Dir.chdir(File.expand_path('../../', APP_PATH)) unless File.exist?(File.expand_path("config.ru"))
 
   require 'rails/commands/server'
   Rails::Server.new.tap { |server|
