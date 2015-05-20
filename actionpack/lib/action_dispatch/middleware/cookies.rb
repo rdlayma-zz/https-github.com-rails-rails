@@ -205,14 +205,14 @@ module ActionDispatch
       # Returns a jar that'll automatically set the assigned cookies to have an expiration date 20 years from now. Example:
       #
       #   cookies.permanent[:prefers_open_id] = true
-      #   # => Set-Cookie: prefers_open_id=true; path=/; expires=Sun, 16-Dec-2029 03:24:16 GMT
+      #   # => Set-Cookie: prefers_open_id=true; path=/; expires=Sun, 16 Dec 2029 03:24:16 -0000
       #
       # This jar is only meant for writing. You'll read permanent cookies through the regular accessor.
       #
       # This jar allows chaining with the signed jar as well, so you can set permanent, signed cookies. Examples:
       #
       #   cookies.permanent.signed[:remember_me] = current_user.id
-      #   # => Set-Cookie: remember_me=BAhU--848956038e692d7046deab32b7131856ab20e14e; path=/; expires=Sun, 16-Dec-2029 03:24:16 GMT
+      #   # => Set-Cookie: remember_me=BAhU--848956038e692d7046deab32b7131856ab20e14e; path=/; expires=Sun, 16 Dec 2029 03:24:16 -0000
       def permanent
         @permanent ||= PermanentCookieJar.new(self, @secret, @serializer)
       end
