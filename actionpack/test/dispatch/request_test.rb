@@ -464,7 +464,7 @@ class RequestTest < ActiveSupport::TestCase
     assert_equal({"bar" => 2}, request.query_parameters)
   end
 
-  test "parameters still accessible after rack parse error" do
+  test "parameters not accessible after rack parse error" do
     mock_rack_env = { "QUERY_STRING" => "x[y]=1&x[y][][w]=2", "rack.input" => "foo" }
     request = nil
     begin
@@ -473,7 +473,9 @@ class RequestTest < ActiveSupport::TestCase
     rescue Rack::Utils::ParameterTypeError
       # rack will raise a Rack::Utils::ParameterTypeError when parsing this query string
     end
-    assert_equal({}, request.parameters)
+    assert_raises(Rack::Utils::ParameterTypeError) do
+      assert_equal({}, request.parameters)
+    end
   end
 
   test "formats with accept header" do
