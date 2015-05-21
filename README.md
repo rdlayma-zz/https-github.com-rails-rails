@@ -19,4 +19,4 @@ All the tests pass, right?
 0. In github/github, run `script/vendor-rails -b your-branch-name` to pull your
    changes into github/github.
 
-[RAILS_VERSION]: RAILS_VERSION
+[`RAILS_VERSION`]: RAILS_VERSION
