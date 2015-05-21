@@ -27,7 +27,7 @@ class CookieStoreTest < ActionDispatch::IntegrationTest
     end
 
     def get_session_id
-      render :text => "id: #{request.session_options[:id]}"
+      render :text => "id: #{request.session.id}"
     end
 
     def call_session_clear
@@ -43,11 +43,6 @@ class CookieStoreTest < ActionDispatch::IntegrationTest
     def raise_data_overflow
       session[:foo] = 'bye!' * 1024
       head :ok
-    end
-
-    def change_session_id
-      request.session_options[:id] = nil
-      get_session_id
     end
 
     def renew_session_id
@@ -237,25 +232,12 @@ class CookieStoreTest < ActionDispatch::IntegrationTest
     end
   end
 
-  def test_setting_session_id_to_nil_is_respected
-    with_test_route_set do
-      cookies[SessionKey] = SignedBar
-
-      get "/get_session_id"
-      sid = response.body
-      assert_equal sid.size, 36
-
-      get "/change_session_id"
-      assert_not_equal sid, response.body
-    end
-  end
-
   def test_session_store_with_expire_after
     with_test_route_set(:expire_after => 5.hours) do
       # First request accesses the session
       time = Time.local(2008, 4, 24)
       Time.stubs(:now).returns(time)
-      expected_expiry = (time + 5.hours).gmtime.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
+      expected_expiry = (time + 5.hours).gmtime.strftime("%a, %d %b %Y %H:%M:%S -0000")
 
       cookies[SessionKey] = SignedBar
 
@@ -269,7 +251,7 @@ class CookieStoreTest < ActionDispatch::IntegrationTest
       # Second request does not access the session
       time = Time.local(2008, 4, 25)
       Time.stubs(:now).returns(time)
-      expected_expiry = (time + 5.hours).gmtime.strftime("%a, %d-%b-%Y %H:%M:%S GMT")
+      expected_expiry = (time + 5.hours).gmtime.strftime("%a, %d %b %Y %H:%M:%S -0000")
 
       get '/no_session_access'
       assert_response :success
