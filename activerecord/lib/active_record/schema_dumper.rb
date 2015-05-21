@@ -17,6 +17,12 @@ module ActiveRecord
     cattr_accessor :ignore_tables
     @@ignore_tables = []
 
+    ##
+    # :singleton-method:
+    # Whether to horizontally align column arguments or not. Defaults to true.
+    cattr_accessor :align_column_arguments
+    @@align_column_arguments = true
+
     def self.dump(connection=ActiveRecord::Base.connection, stream=STDOUT)
       new(connection).dump(stream)
       stream
@@ -130,7 +136,11 @@ HEADER
           keys = [:name, :limit, :precision, :scale, :default, :null] & column_specs.map{ |k| k.keys }.flatten
 
           # figure out the lengths for each column based on above keys
-          lengths = keys.map{ |key| column_specs.map{ |spec| spec[key] ? spec[key].length + 2 : 0 }.max }
+          lengths = if align_column_arguments
+                      keys.map{ |key| column_specs.map{ |spec| spec[key] ? spec[key].length + 2 : 0 }.max }
+                    else
+                      keys.map{ |key| 0 }
+                    end
 
           # the string we're going to sprintf our values against, with standardized column widths
           format_string = lengths.map{ |len| "%-#{len}s" }
