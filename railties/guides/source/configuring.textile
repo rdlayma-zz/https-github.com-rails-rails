@@ -317,14 +317,6 @@ The caching code adds two additional settings:
 
 * +ActionController::Base.page_cache_extension+ sets the extension to be used when generating pages for the cache (this is ignored if the incoming request already has an extension). The default is +.html+.
 
-The Active Record session store can also be configured:
-
-* +ActiveRecord::SessionStore::Session.table_name+ sets the name of the table used to store sessions. Defaults to +sessions+.
-
-* +ActiveRecord::SessionStore::Session.primary_key+ sets the name of the ID column used in the sessions table. Defaults to +session_id+.
-
-* +ActiveRecord::SessionStore::Session.data_column_name+ sets the name of the column which stores marshaled session data. Defaults to +data+.
-
 h4. Configuring Action Dispatch
 
 * +config.action_dispatch.session_store+ sets the name of the store for session data. The default is +:cookie_store+; other valid options include +:active_record_store+, +:mem_cache_store+ or the name of your own custom class.
