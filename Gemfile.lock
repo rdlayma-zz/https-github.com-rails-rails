@@ -82,7 +82,7 @@ GEM
     pg (0.18.2)
     polyglot (0.3.5)
     power_assert (0.2.3)
-    rack (1.6.1)
+    rack (1.6.2pre1)
     rack-cache (1.2)
       rack (>= 0.4)
     rack-ssl (1.4.1)
