@@ -591,8 +591,6 @@ class RequestTest < ActiveSupport::TestCase
       # rack will raise a TypeError when parsing this query string
       request.parameters
     end
-
-    assert_equal({}, request.parameters)
   end
 
   test "we have access to the original exception" do
