@@ -20,7 +20,7 @@ Gem::Specification.new do |s|
   s.requirements << 'none'
 
   s.add_dependency 'activesupport', version
-  s.add_dependency 'builder',       '~> 3.1.0'
+  s.add_dependency 'builder',       '~> 3.2.0'
   s.add_dependency 'rack',          '~> 1.6.1'
   s.add_dependency 'rack-test',     '~> 0.6.2'
   s.add_dependency 'erubis',        '~> 2.7.0'
