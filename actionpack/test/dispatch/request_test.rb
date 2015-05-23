@@ -866,6 +866,14 @@ class RequestTest < ActiveSupport::TestCase
 
 protected
 
+  def setup
+    @env = {
+      :ip_spoofing_check => true,
+      :tld_length => 1,
+      "rack.input" => "foo"
+    }
+  end
+
   def stub_request(env = {})
     ip_spoofing_check = env.key?(:ip_spoofing_check) ? env.delete(:ip_spoofing_check) : true
     @trusted_proxies ||= nil
@@ -873,6 +881,8 @@ protected
     tld_length = env.key?(:tld_length) ? env.delete(:tld_length) : 1
     ip_app.call(env)
     ActionDispatch::Http::URL.tld_length = tld_length
+
+    env = @env.merge(env)
     ActionDispatch::Request.new(env)
   end
 end
