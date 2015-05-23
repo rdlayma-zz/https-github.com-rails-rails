@@ -86,6 +86,15 @@ module ActionView
   end
 end
 
+# Force ActionView::Helpers to be required straight away
+#
+# This is necessary because it monkeypatches the ActionView module itself and
+# installs a method that the action_view railtie needs to initialize properly.
+#
+# This previously worked by accident because Sprockets would have forced
+# ActionView::Helpers to be loaded during its initialization.
+ActionView::Helpers
+
 require 'active_support/core_ext/string/output_safety'
 
 ActiveSupport.on_load(:i18n) do
