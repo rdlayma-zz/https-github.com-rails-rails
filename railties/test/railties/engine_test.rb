@@ -32,17 +32,6 @@ module RailtiesTest
       require "#{app_path}/config/environment"
     end
 
-    test "serving sprocket's assets" do
-      @plugin.write "app/assets/javascripts/engine.js.erb", "<%= :alert %>();"
-
-      boot_rails
-      require 'rack/test'
-      extend Rack::Test::Methods
-
-      get "/assets/engine.js"
-      assert_match "alert()", last_response.body
-    end
-
     test "rake environment can be called in the engine" do
       boot_rails
 
@@ -1133,22 +1122,6 @@ YAML
         App's bar partial
       RUBY
 
-      @plugin.write "app/assets/javascripts/foo.js", <<-RUBY
-        // Bukkit's foo js
-      RUBY
-
-      app_file "app/assets/javascripts/foo.js", <<-RUBY
-        // App's foo js
-      RUBY
-
-      @blog.write "app/assets/javascripts/bar.js", <<-RUBY
-        // Blog's bar js
-      RUBY
-
-      app_file "app/assets/javascripts/bar.js", <<-RUBY
-        // App's bar js
-      RUBY
-
       add_to_config("config.railties_order = [:all, :main_app, Blog::Engine]")
 
       boot_rails
@@ -1158,12 +1131,6 @@ YAML
 
       get("/bar")
       assert_equal "App's bar partial", last_response.body.strip
-
-      get("/assets/foo.js")
-      assert_equal "// Bukkit's foo js\n;", last_response.body.strip
-
-      get("/assets/bar.js")
-      assert_equal "// App's bar js\n;", last_response.body.strip
 
       # ensure that railties are not added twice
       railties = Rails.application.send(:ordered_railties).map(&:class)
