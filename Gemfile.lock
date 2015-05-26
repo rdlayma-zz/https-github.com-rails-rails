@@ -80,7 +80,7 @@ GEM
       mini_portile (~> 0.6.0)
     pg (0.17.1)
     racc (1.4.12)
-    rack (1.6.1)
+    rack (1.6.2pre1)
     rack-cache (1.2)
       rack (>= 0.4)
     rack-test (0.6.3)
