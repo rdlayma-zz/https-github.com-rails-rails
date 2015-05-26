@@ -3,6 +3,7 @@ require 'stringio'
 require 'active_support/inflector'
 require 'action_dispatch/http/headers'
 require 'action_controller/metal/exceptions'
+require 'rack'
 require 'rack/request'
 require 'action_dispatch/http/cache'
 require 'action_dispatch/http/mime_negotiation'
@@ -317,7 +318,7 @@ module ActionDispatch
 
     protected
 
-    def parse_query(qs)
+    def parse_query(*)
       deep_munge(super)
     end
 

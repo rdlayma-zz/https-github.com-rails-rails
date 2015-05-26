@@ -591,8 +591,6 @@ class RequestTest < ActiveSupport::TestCase
       # rack will raise a TypeError when parsing this query string
       request.parameters
     end
-
-    assert_equal({}, request.parameters)
   end
 
   test "we have access to the original exception" do
@@ -644,6 +642,12 @@ class RequestTest < ActiveSupport::TestCase
     assert_not request.format.html?
     assert_not request.format.xml?
     assert_not request.format.json?
+  end
+
+  test "format does not throw exceptions when malformed parameters" do
+    request = stub_request("QUERY_STRING" => "x[y]=1&x[y][][w]=2")
+    assert request.formats
+    assert request.format.html?
   end
 
   test "formats with xhr request" do
@@ -862,6 +866,14 @@ class RequestTest < ActiveSupport::TestCase
 
 protected
 
+  def setup
+    @env = {
+      :ip_spoofing_check => true,
+      :tld_length => 1,
+      "rack.input" => "foo"
+    }
+  end
+
   def stub_request(env = {})
     ip_spoofing_check = env.key?(:ip_spoofing_check) ? env.delete(:ip_spoofing_check) : true
     @trusted_proxies ||= nil
@@ -869,6 +881,8 @@ protected
     tld_length = env.key?(:tld_length) ? env.delete(:tld_length) : 1
     ip_app.call(env)
     ActionDispatch::Http::URL.tld_length = tld_length
+
+    env = @env.merge(env)
     ActionDispatch::Request.new(env)
   end
 end
