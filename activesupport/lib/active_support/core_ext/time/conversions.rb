@@ -3,7 +3,20 @@ require 'active_support/values/time_zone'
 
 class Time
   DATE_FORMATS = {
-    :db           => '%Y-%m-%d %H:%M:%S',
+    :db           => lambda { |time|
+      time = time.utc.to_time
+
+      if !defined?(ActiveRecord::Base.default_timezone) || ActiveRecord::Base.default_timezone == :local
+        # our DB is in local time (ugh), so make sure the time object is
+        # converted to local time before converting it to a db string
+        #
+        # also we have to do this ridiculous dance to ensure that we can
+        # turn any given DateTime object into something in localtime.
+        time = time.getlocal
+      end
+
+      time.strftime("%Y-%m-%d %H:%M:%S")
+    },
     :number       => '%Y%m%d%H%M%S',
     :nsec         => '%Y%m%d%H%M%S%9N',
     :time         => '%H:%M',
