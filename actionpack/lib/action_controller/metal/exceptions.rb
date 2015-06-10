@@ -43,4 +43,7 @@ module ActionController
 
   class UnknownHttpMethod < ActionControllerError #:nodoc:
   end
+
+  class UnknownFormat < ActionControllerError #:nodoc:
+  end
 end
