@@ -99,7 +99,7 @@ db_namespace = namespace :db do
         return # Skip the else clause of begin/rescue
       else
         ActiveRecord::Base.establish_connection(config)
-        ActiveRecord::Base.connection
+        ActiveRecord::Base.connection.execute("SELECT 1")
       end
     rescue
       case config['adapter']
