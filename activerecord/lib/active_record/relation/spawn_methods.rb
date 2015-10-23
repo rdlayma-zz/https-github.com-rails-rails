@@ -29,25 +29,11 @@ module ActiveRecord
 
       merge_joins(merged_relation, r)
 
-      merged_wheres = @where_values + r.where_values
 
-      unless @where_values.empty?
-        # Remove duplicate ARel attributes. Last one wins.
-        seen = Hash.new { |h,table| h[table] = {} }
-        merged_wheres = merged_wheres.reverse.reject { |w|
-          nuke = false
-          if w.respond_to?(:operator) && w.operator == :== &&
-            w.left.respond_to?(:relation)
-            name              = w.left.name
-            table             = w.left.relation.name
-            nuke              = seen[table][name]
-            seen[table][name] = true
-          end
-          nuke
-        }.reverse
-      end
-
-      merged_relation.where_values = merged_wheres
+      lhs_wheres = @where_values
+      rhs_wheres = r.where_values
+      _, kept = partition_overwrites(lhs_wheres, rhs_wheres)
+      merged_relation.where_values = kept + rhs_wheres
 
       (Relation::SINGLE_VALUE_METHODS - [:lock, :create_with, :reordering]).each do |method|
         value = r.send(:"#{method}_value")
@@ -146,6 +132,21 @@ module ActiveRecord
     end
 
     private
+
+      def partition_overwrites(lhs_wheres, rhs_wheres)
+        if lhs_wheres.empty? || rhs_wheres.empty?
+          return [[], lhs_wheres]
+        end
+
+        nodes = rhs_wheres.find_all do |w|
+          w.respond_to?(:operator) && w.operator == :==
+        end
+        seen = Set.new(nodes) { |node| node.left }
+
+        lhs_wheres.partition do |w|
+          w.respond_to?(:operator) && w.operator == :== && seen.include?(w.left)
+        end
+      end
 
       def merge_joins(relation, other)
         values = other.joins_values
