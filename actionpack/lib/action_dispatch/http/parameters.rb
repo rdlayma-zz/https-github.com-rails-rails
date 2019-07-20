@@ -98,8 +98,20 @@ module ActionDispatch
 
         def binary_params_for?(controller, action)
           controller_class_for(controller).binary_params_for?(action)
-        rescue NameError
-          false
+        rescue NameError => e
+          missing_constant = e.message[/uninitialized constant (\S+)/, 1]
+          controller_class_name = controller_class_name_for(controller)
+
+          # We need to special-case error handling to play well with the
+          # DebugExceptions middleware when routes refer to non-existing
+          # controllers.
+          #
+          # Please, check the message of commit 32623d2 for further details.
+          if controller_class_name.match?(/\A#{missing_constant}(::|\z)/)
+            false
+          else
+            raise
+          end
         end
 
         def parse_formatted_parameters(parsers)

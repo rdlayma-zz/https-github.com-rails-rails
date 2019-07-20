@@ -82,11 +82,14 @@ module ActionDispatch
       controller_class_for(params[:controller])
     end
 
+    def controller_class_name_for(name)
+      controller_param = name.underscore
+      "#{controller_param.camelize}Controller"
+    end
+
     def controller_class_for(name)
       if name
-        controller_param = name.underscore
-        const_name = "#{controller_param.camelize}Controller"
-        ActiveSupport::Dependencies.constantize(const_name)
+        ActiveSupport::Dependencies.constantize(controller_class_name_for(name))
       else
         PASS_NOT_FOUND
       end
