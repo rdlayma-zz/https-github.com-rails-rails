@@ -1,0 +1,28 @@
+version: "3"
+services:
+  rails:
+    build:
+      context: docker/rails
+      dockerfile: Dockerfile
+    environment:
+      BUNDLE_JOBS: "8"
+    volumes:
+      - gems:/usr/local/bundle
+      - .:/rails
+    working_dir: /rails
+    ports:
+      - "3000:3000"
+    command: /rails/docker/rails/init.sh
+  memcached:
+    image: memcached:latest
+  redis:
+    image: redis:latest
+volumes:
+  gems:
+#   postgres:
+#     build: docker/postgres
+#     image: postgres:latest
+#   postgresql:
+#     build:
+#       context: docker
+#       dockerfile: Dockerfile.postgresql
