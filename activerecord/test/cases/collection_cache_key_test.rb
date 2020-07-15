@@ -45,7 +45,11 @@ module ActiveRecord
     end
 
     test "cache_key with a relation having selected columns" do
-      assert_cache_key_format :developers, Developer.select(:salary)
+      assert_raises ActiveModel::MissingAttributeError do
+        assert_cache_key_format :developers, Developer.select(:salary).cache_key
+      end
+
+      assert_cache_key_format :developers, Developer.select(:salary, :legacy_updated_at, :legacy_updated_on)
     end
 
     test "cache_key with a relation having distinct and order" do
