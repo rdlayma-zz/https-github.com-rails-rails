@@ -301,16 +301,12 @@ module ActiveRecord
 
       "#{klass.model_name.cache_key}/collection/#{ActiveSupport::Digest.hexdigest(to_a.map(&:cache_key).join("-"))}"
     end
+    alias cache_key_with_version cache_key
 
     # Returns a cache version that can be used together with the cache key to form
     # a recyclable caching scheme.
     def cache_version(timestamp_column = :updated_at)
       ActiveSupport::Deprecation.warn "cache_version has been deprecated and has no effect"
-    end
-
-    # Returns a cache key along with the version.
-    def cache_key_with_version
-      ActiveSupport::Deprecation.warn "cache_key_with_version has been deprecated and has no effect"
     end
 
     # Scope all queries to the current scope.

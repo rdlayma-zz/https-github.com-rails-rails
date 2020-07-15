@@ -52,10 +52,13 @@ module ActiveRecord
       assert_cache_key_format :developers, Developer.distinct.order(:salary).limit(5)
     end
 
-    test "cache_key with timestamp, cache_version and cache_key_with_version are deprecated" do
+    test "cache_key_with_version is an alias" do
+      assert_equal Developer.all.cache_key, Developer.all.cache_key_with_version
+    end
+
+    test "cache_key with timestamp, cache_version are deprecated" do
       assert_deprecated { Topic.where("title like ?", "%Topic%").cache_key(:written_on) }
       assert_deprecated { Developer.all.cache_version }
-      assert_deprecated { Developer.all.cache_key_with_version }
     end
 
     private
