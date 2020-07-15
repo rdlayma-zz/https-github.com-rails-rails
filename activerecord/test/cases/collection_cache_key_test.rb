@@ -1,27 +1,20 @@
 # frozen_string_literal: true
 
 require "cases/helper"
-require "models/computer"
 require "models/developer"
+require "models/computer" # Required by Developer
 require "models/project"
-require "models/post"
-require "models/comment"
 
 module ActiveRecord
   class CollectionCacheKeyTest < ActiveRecord::TestCase
-    fixtures :developers, :projects, :developers_projects, :comments, :posts
+    fixtures :developers, :projects, :developers_projects
 
     test "cache_key for relations" do
       [ Developer.where(salary: 100_000).order(updated_at: :desc),
-        Developer.where(salary: 100_000).order(updated_at: :desc).limit(5) ].each do |developers|
+        Developer.where(salary: 100_000).order(updated_at: :desc).limit(5),
+        Developer.includes(:projects).where("projects.name": "Active Record") ].each do |developers|
         assert_cache_key_format :developers, developers, digest: developers.map(&:cache_key).join("-")
       end
-    end
-
-    test "cache_key for relation with includes" do
-      comments = Comment.includes(:post).where("posts.type": "Post")
-      assert_cache_key_format :comments, comments
-      assert comments.loaded?
     end
 
     test "query counts" do
@@ -39,8 +32,8 @@ module ActiveRecord
     end
 
     test "cache_key for empty collection proxy" do
-      Comment.delete_all
-      assert_cache_key_format :comments, Post.includes(:comments).first.comments
+      Developer.delete_all
+      assert_cache_key_format :developers, Project.includes(:developers).first.developers
     end
 
     test "cache_key with a relation having selected columns" do
