@@ -290,106 +290,27 @@ module ActiveRecord
       limit_value ? records.many? : size > 1
     end
 
-    # Returns a stable cache key that can be used to identify this query.
-    # The cache key is built with a fingerprint of the SQL query.
+    # Returns a stable cache key to identify this relation.
     #
-    #    Product.where("name like ?", "%Cosmic Encounter%").cache_key
-    #    # => "products/query-1850ab3d302391b85b8693e941286659"
-    #
-    # If ActiveRecord::Base.collection_cache_versioning is turned off, as it was
-    # in Rails 6.0 and earlier, the cache key will also include a version.
-    #
-    #    ActiveRecord::Base.collection_cache_versioning = false
-    #    Product.where("name like ?", "%Cosmic Encounter%").cache_key
-    #    # => "products/query-1850ab3d302391b85b8693e941286659-1-20150714212553907087000"
-    #
-    # You can also pass a custom timestamp column to fetch the timestamp of the
-    # last updated record.
-    #
-    #   Product.where("name like ?", "%Game%").cache_key(:last_reviewed_at)
-    def cache_key(timestamp_column = "updated_at")
-      klass.collection_cache_key(self, timestamp_column)
-    end
-
-    def compute_cache_key(timestamp_column = :updated_at) # :nodoc:
-      query_signature = ActiveSupport::Digest.hexdigest(to_sql)
-      key = "#{klass.model_name.cache_key}/query-#{query_signature}"
-
-      if collection_cache_versioning
-        key
-      else
-        "#{key}-#{compute_cache_version(timestamp_column)}"
+    #   Product.limit(100).cache_key
+    #   # => "products/collection/1850ab3d302391b85b8693e941286659"
+    def cache_key(timestamp_column = nil)
+      if timestamp_column
+        ActiveSupport::Deprecation.warn "passing a timestamp_column to cache_key has been deprecated and has no effect"
       end
+
+      "#{klass.model_name.cache_key}/collection/#{ActiveSupport::Digest.hexdigest(to_a.map(&:cache_key).join("-"))}"
     end
-    private :compute_cache_key
 
     # Returns a cache version that can be used together with the cache key to form
-    # a recyclable caching scheme. The cache version is built with the number of records
-    # matching the query, and the timestamp of the last updated record. When a new record
-    # comes to match the query, or any of the existing records is updated or deleted,
-    # the cache version changes.
-    #
-    # If the collection is loaded, the method will iterate through the records
-    # to generate the timestamp, otherwise it will trigger one SQL query like:
-    #
-    #    SELECT COUNT(*), MAX("products"."updated_at") FROM "products" WHERE (name like '%Cosmic Encounter%')
+    # a recyclable caching scheme.
     def cache_version(timestamp_column = :updated_at)
-      if collection_cache_versioning
-        @cache_versions ||= {}
-        @cache_versions[timestamp_column] ||= compute_cache_version(timestamp_column)
-      end
+      ActiveSupport::Deprecation.warn "cache_version has been deprecated and has no effect"
     end
-
-    def compute_cache_version(timestamp_column) # :nodoc:
-      timestamp_column = timestamp_column.to_s
-
-      if loaded? || distinct_value
-        size = records.size
-        if size > 0
-          timestamp = records.map { |record| record.read_attribute(timestamp_column) }.max
-        end
-      else
-        collection = eager_loading? ? apply_join_dependency : self
-
-        column = connection.visitor.compile(arel_attribute(timestamp_column))
-        select_values = "COUNT(*) AS #{connection.quote_column_name("size")}, MAX(%s) AS timestamp"
-
-        if collection.has_limit_or_offset?
-          query = collection.select("#{column} AS collection_cache_key_timestamp")
-          subquery_alias = "subquery_for_cache_key"
-          subquery_column = "#{subquery_alias}.collection_cache_key_timestamp"
-          arel = query.build_subquery(subquery_alias, select_values % subquery_column)
-        else
-          query = collection.unscope(:order)
-          query.select_values = [select_values % column]
-          arel = query.arel
-        end
-
-        size, timestamp = connection.select_rows(arel, nil).first
-
-        if size
-          column_type = klass.type_for_attribute(timestamp_column)
-          timestamp = column_type.deserialize(timestamp)
-        else
-          size = 0
-        end
-      end
-
-      if timestamp
-        "#{size}-#{timestamp.utc.to_s(cache_timestamp_format)}"
-      else
-        "#{size}"
-      end
-    end
-    private :compute_cache_version
 
     # Returns a cache key along with the version.
     def cache_key_with_version
-      if version = cache_version
-        "#{cache_key}-#{version}"
-      else
-        cache_key
-      end
+      ActiveSupport::Deprecation.warn "cache_key_with_version has been deprecated and has no effect"
     end
 
     # Scope all queries to the current scope.

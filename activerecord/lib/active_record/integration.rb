@@ -158,10 +158,6 @@ module ActiveRecord
           end
         end
       end
-
-      def collection_cache_key(collection = all, timestamp_column = :updated_at) # :nodoc:
-        collection.send(:compute_cache_key, timestamp_column)
-      end
     end
 
     private
