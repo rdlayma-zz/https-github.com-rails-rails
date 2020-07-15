@@ -4,13 +4,12 @@ require "cases/helper"
 require "models/computer"
 require "models/developer"
 require "models/project"
-require "models/topic"
 require "models/post"
 require "models/comment"
 
 module ActiveRecord
   class CollectionCacheKeyTest < ActiveRecord::TestCase
-    fixtures :developers, :projects, :developers_projects, :topics, :comments, :posts
+    fixtures :developers, :projects, :developers_projects, :comments, :posts
 
     test "cache_key for relations" do
       [ Developer.where(salary: 100_000).order(updated_at: :desc),
@@ -61,7 +60,7 @@ module ActiveRecord
     end
 
     test "cache_key with timestamp, cache_version are deprecated" do
-      assert_deprecated { Topic.where("title like ?", "%Topic%").cache_key(:written_on) }
+      assert_deprecated { Developer.where(name: "David").cache_key(:legacy_updated_at) }
       assert_deprecated { Developer.all.cache_version }
     end
 
