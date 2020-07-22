@@ -299,15 +299,24 @@ module ActiveRecord
         ActiveSupport::Deprecation.warn "passing a timestamp_column to cache_key has been deprecated and has no effect"
       end
 
-      "#{klass.model_name.cache_key}/collection/#{ActiveSupport::Digest.hexdigest(to_a.map(&:cache_key).join("-"))}"
+      collection_cache_key :cache_key
     end
-    alias cache_key_with_version cache_key
 
     # Returns a cache version that can be used together with the cache key to form
     # a recyclable caching scheme.
     def cache_version(timestamp_column = :updated_at)
       ActiveSupport::Deprecation.warn "cache_version has been deprecated and has no effect"
     end
+
+    # Returns a cache key along with the version.
+    def cache_key_with_version
+      collection_cache_key :cache_key_with_version
+    end
+
+    def collection_cache_key(method_on_record)
+      "#{klass.model_name.cache_key}/collection/#{ActiveSupport::Digest.hexdigest(to_a.map(&method_on_record).join("-"))}"
+    end
+    private :collection_cache_key
 
     # Scope all queries to the current scope.
     #
