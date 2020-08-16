@@ -9,7 +9,7 @@ module ActiveRecord
         @tables = tables
         @label = label
         @timestamp = timestamp
-        fill_row_model_attributes if @model_class
+        fill_row_model_attributes
       end
 
       def to_hash

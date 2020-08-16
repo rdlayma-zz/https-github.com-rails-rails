@@ -583,9 +583,13 @@ module ActiveRecord
       tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
 
       tables[table_name] = fixtures.map do |label, fixture|
-        TableRow.new fixture.to_hash, model_class: model_class, tables: tables, label: label,
-          timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now
-      end
+        if model_class
+          TableRow.new fixture.to_hash, model_class: model_class, tables: tables, label: label,
+            timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now
+        else
+          fixture
+        end
+      end.compact
       tables.transform_values { |rows| rows.map(&:to_hash) }
     end
 
