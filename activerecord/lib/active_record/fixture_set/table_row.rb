@@ -29,7 +29,7 @@ module ActiveRecord
         end
 
         def reflection_class
-          @reflection_class ||= @row[model_metadata.inheritance_column_name]&.safe_constantize || @model_class
+          @reflection_class ||= @row[model_metadata.inheritance_column_name].try(:safe_constantize) || @model_class
         end
 
         def fill_timestamps
