@@ -512,7 +512,7 @@ module ActiveRecord
         connection = block_given? ? block : -> { ActiveRecord::Base.connection }
         cache      = cache_for_connection(connection.call)
 
-        if (fixture_files = fixture_set_names.reject { |set_name| cache[set_name] }).any?
+        if (fixture_files = fixture_set_names - cache.keys).any?
           sets = fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
           insert sets, connection
 
