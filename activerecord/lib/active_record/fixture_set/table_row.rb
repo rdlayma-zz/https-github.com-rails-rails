@@ -37,8 +37,8 @@ module ActiveRecord
         end
 
         def interpolate_label
-          @row.each do |key, value|
-            @row[key] = value.gsub("$LABEL", @label.to_s) if value.is_a?(String)
+          @row.transform_values! do |value|
+            value.respond_to?(:gsub) ? value.gsub("$LABEL", @label.to_s) : value
           end
         end
 
