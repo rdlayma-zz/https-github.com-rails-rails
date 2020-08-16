@@ -15,8 +15,8 @@ module ActiveRecord
       end
 
       def test_erb_processing
-        devs = Array.new(8) { |i| "dev_#{i + 3}" }
-        assert_equal [], devs - read_fixture(:developers).rows.to_a.map(&:first)
+        assert_equal %w[ david jamis dev_3 dev_4 dev_5 dev_6 dev_7 dev_8 dev_9 dev_10 poor_jamis ].sort,
+          read_fixture(:developers).rows.keys.sort
       end
 
       def test_empty_file
