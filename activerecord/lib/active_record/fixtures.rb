@@ -587,15 +587,7 @@ module ActiveRecord
         end
 
         def insert(fixture_sets, connection) # :nodoc:
-          fixture_sets_by_connection = fixture_sets.group_by do |fixture_set|
-            if fixture_set.model_class
-              fixture_set.model_class.connection
-            else
-              connection.call
-            end
-          end
-
-          fixture_sets_by_connection.each do |conn, set|
+          fixture_sets.group_by { |set| set.model_class&.connection || connection.call }.each do |conn, set|
             table_rows_for_connection = Hash.new { |h, k| h[k] = [] }
 
             set.each do |fixture_set|
