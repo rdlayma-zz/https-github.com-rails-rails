@@ -8,10 +8,6 @@ module ActiveRecord
           @association = association
         end
 
-        def name
-          @association.name
-        end
-
         def primary_key_type
           @association.klass.type_for_attribute(@association.klass.primary_key).type
         end
@@ -114,14 +110,15 @@ module ActiveRecord
               end
             when :has_many
               if association.options[:through]
-                add_join_records_sidestepping_fixtures_file(HasManyThroughProxy.new(association))
+                add_join_records_sidestepping_fixtures_file(association)
               end
             end
           end
         end
 
         def add_join_records_sidestepping_fixtures_file(association)
-          if (targets = @row.delete(association.name.to_s))
+          if targets = @row.delete(association.name.to_s)
+            association = HasManyThroughProxy.new(association)
             targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
 
             @table_rows.tables[association.join_table].concat \
