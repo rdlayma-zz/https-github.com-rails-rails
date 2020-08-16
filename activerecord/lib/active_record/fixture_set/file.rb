@@ -25,11 +25,13 @@ module ActiveRecord
       end
 
       def model_class
-        config_row["model_class"]
+        parse_rows
+        @configuration["model_class"]
       end
 
       def ignored_fixtures
-        config_row["ignore"]
+        parse_rows
+        @configuration["ignore"]
       end
 
       private
@@ -38,15 +40,10 @@ module ActiveRecord
           @rows
         end
 
-        def config_row
-          parse_rows
-          @config_row
-        end
-
         def parse_rows
           unless defined?(@rows)
             @rows = read_data
-            @config_row = @rows.delete("_fixture") || {}
+            @configuration = @rows.delete("_fixture") || {}
           end
         end
 
