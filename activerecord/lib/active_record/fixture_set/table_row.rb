@@ -3,10 +3,9 @@
 module ActiveRecord
   class FixtureSet
     class TableRow # :nodoc:
-      def initialize(row, model_metadata:, tables:, label:, timestamp:)
+      def initialize(row, model_class:, tables:, label:, timestamp:)
         @row = row
-        @model_metadata = model_metadata
-        @model_class = model_metadata.model_class
+        @model_class = model_class
         @tables = tables
         @label = label
         @timestamp = timestamp
@@ -18,8 +17,6 @@ module ActiveRecord
       end
 
       private
-        attr_reader :model_metadata
-
         def fill_row_model_attributes
           fill_timestamps
           interpolate_label
@@ -29,11 +26,13 @@ module ActiveRecord
         end
 
         def reflection_class
-          @reflection_class ||= @row[model_metadata.inheritance_column_name].try(:safe_constantize) || @model_class
+          @reflection_class ||= @row[@model_class.inheritance_column].try(:safe_constantize) || @model_class
         end
 
         def fill_timestamps
-          model_metadata.timestamp_column_names.each { |timestamp| @row[timestamp] ||= @timestamp }
+          if @model_class.record_timestamps
+            @model_class.all_timestamp_attributes_in_model.each { |timestamp| @row[timestamp] ||= @timestamp }
+          end
         end
 
         def interpolate_label
@@ -43,8 +42,8 @@ module ActiveRecord
         end
 
         def generate_primary_key
-          if model_metadata.has_primary_key_column?
-            @row[model_metadata.primary_key_name] ||= value_from_identification(@label, @model_class, @model_class.primary_key)
+          if @model_class.column_names.include?(@model_class.primary_key)
+            @row[@model_class.primary_key] ||= value_from_identification(@label, @model_class, @model_class.primary_key)
           end
         end
 
@@ -78,7 +77,7 @@ module ActiveRecord
           targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
 
           @tables[association.through_reflection.table_name].concat \
-            targets.map { |target| { association.through_reflection.foreign_key => @row[model_metadata.primary_key_name],
+            targets.map { |target| { association.through_reflection.foreign_key => @row[@model_class.primary_key],
                 association.foreign_key => value_from_identification(target, association.klass, association.klass.primary_key) } }
         end
 

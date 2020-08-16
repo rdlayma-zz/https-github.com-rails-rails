@@ -10,7 +10,6 @@ require "active_support/core_ext/digest/uuid"
 require "active_record/fixture_set/file"
 require "active_record/fixture_set/render_context"
 require "active_record/fixture_set/table_row"
-require "active_record/fixture_set/model_metadata"
 require "active_record/test_fixtures"
 
 module ActiveRecord
@@ -583,10 +582,8 @@ module ActiveRecord
       tables = Hash.new { |h, k| h[k] = [] }
       tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
 
-      metadata = ModelMetadata.new(model_class)
-
       tables[table_name] = fixtures.map do |label, fixture|
-        TableRow.new fixture.to_hash, model_metadata: metadata, tables: tables, label: label,
+        TableRow.new fixture.to_hash, model_class: model_class, tables: tables, label: label,
           timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now
       end
       tables.transform_values { |rows| rows.map(&:to_hash) }
