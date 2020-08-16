@@ -476,7 +476,7 @@ module ActiveRecord
 
       def [](fs_name)
         @class_names.fetch(fs_name) do
-          klass = default_fixture_model_klass(fs_name)
+          klass = fixture_model_klass(fs_name)
           @class_names[fs_name] = active_record?(klass) ? klass : nil
         end
       end
@@ -486,17 +486,17 @@ module ActiveRecord
           klass && klass < ActiveRecord::Base
         end
 
-        def default_fixture_model_klass(fs_name)
-          ActiveRecord::FixtureSet.default_fixture_model_name(fs_name, @config).safe_constantize
+        def fixture_model_klass(fs_name)
+          ActiveRecord::FixtureSet.fixture_model_name(fs_name, @config).safe_constantize
         end
     end
 
     class << self
-      def default_fixture_model_name(set_name, config = ActiveRecord::Base) # :nodoc:
+      def fixture_model_name(set_name, config = ActiveRecord::Base) # :nodoc:
         config.pluralize_table_names ? set_name.singularize.camelize : set_name.camelize
       end
 
-      def default_fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
+      def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
         :"#{config.table_name_prefix}#{set_name.tr('/', '_')}#{config.table_name_suffix}"
       end
 
@@ -613,7 +613,7 @@ module ActiveRecord
 
       @fixtures = read_fixture_files fixture_files
 
-      @table_name = model_class&.table_name || self.class.default_fixture_table_name(name, config)
+      @table_name = model_class&.table_name || self.class.fixture_table_name(name, config)
     end
     delegate :[], :[]=, :each, :size, to: :fixtures
 
