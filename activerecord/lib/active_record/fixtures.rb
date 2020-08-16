@@ -504,21 +504,6 @@ module ActiveRecord
         @@all_cached_fixtures[connection]
       end
 
-      def instantiate_fixtures(object, fixture_set, load_instances = true)
-        return unless load_instances
-        fixture_set.each do |fixture_name, fixture|
-          object.instance_variable_set "@#{fixture_name}", fixture.find
-        rescue FixtureClassNotFound
-          nil
-        end
-      end
-
-      def instantiate_all_loaded_fixtures(object, load_instances = true)
-        all_loaded_fixtures.each_value do |fixture_set|
-          instantiate_fixtures(object, fixture_set, load_instances)
-        end
-      end
-
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
         fixture_set_names = Array(fixture_set_names).map(&:to_s)
         class_names = ClassCache.new(class_names) { |accessed_name| fixture_model_klass(accessed_name, config) }
