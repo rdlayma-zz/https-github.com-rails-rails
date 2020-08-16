@@ -69,8 +69,7 @@ module ActiveRecord
                   @row[association.join_foreign_type] = $1
                 end
 
-                fk_type = reflection_class.type_for_attribute(fk_name).type
-                @row[fk_name] = ActiveRecord::FixtureSet.identify(value, fk_type)
+                @row[fk_name] = ActiveRecord::FixtureSet.identify(value, reflection_class.type_for_attribute(fk_name).type)
               end
             when :has_many
               if association.options[:through]
