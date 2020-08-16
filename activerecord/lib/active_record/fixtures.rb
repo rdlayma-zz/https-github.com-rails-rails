@@ -476,17 +476,13 @@ module ActiveRecord
       def [](fs_name)
         @class_names.fetch(fs_name) do
           klass = default_fixture_model(fs_name, @config).safe_constantize
-          insert_class(@class_names, fs_name, klass)
+          @class_names[fs_name] = active_record?(klass) ? klass : nil
         end
       end
 
       private
         def active_record?(klass)
           klass && klass < ActiveRecord::Base
-        end
-
-        def insert_class(class_names, name, klass)
-          class_names[name] = active_record?(klass) ? klass : nil
         end
 
         def default_fixture_model(fs_name, config)
