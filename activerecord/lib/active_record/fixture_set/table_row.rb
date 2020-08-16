@@ -128,17 +128,10 @@ module ActiveRecord
 
         def add_join_records_sidestepping_fixtures_file(association)
           if (targets = @row.delete(association.name.to_s))
-            table_name  = association.join_table
-            column_type = association.primary_key_type
-            lhs_key     = association.lhs_key
-            rhs_key     = association.rhs_key
-
             targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
-            joins   = targets.map do |target|
-              { lhs_key => @row[model_metadata.primary_key_name],
-                rhs_key => ActiveRecord::FixtureSet.identify(target, column_type) }
-            end
-            @table_rows.tables[table_name].concat(joins)
+
+            @table_rows.tables[association.join_table].concat \
+              targets.map { |target| { association.lhs_key => @row[model_metadata.primary_key_name], association.rhs_key => ActiveRecord::FixtureSet.identify(target, association.primary_key_type) } }
           end
         end
     end
