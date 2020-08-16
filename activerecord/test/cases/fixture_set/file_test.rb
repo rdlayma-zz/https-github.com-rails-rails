@@ -29,26 +29,20 @@ module ActiveRecord
       end
 
       def test_empty_file
-        tmp_yaml ["empty", "yml"], "" do |t|
-          assert_empty File.new(t.path).rows
-        end
+        assert_empty read_yaml.rows
       end
 
       # A valid YAML file is not necessarily a value Fixture file. Make sure
       # an exception is raised if the format is not valid Fixture format.
       def test_wrong_fixture_format_string
-        tmp_yaml ["empty", "yml"], "qwerty" do |t|
-          assert_raises ActiveRecord::Fixture::FormatError do
-            File.new(t.path)
-          end
+        assert_raises ActiveRecord::Fixture::FormatError do
+          read_yaml "qwerty"
         end
       end
 
       def test_wrong_fixture_format_nested
-        tmp_yaml ["empty", "yml"], "one: two" do |t|
-          assert_raises ActiveRecord::Fixture::FormatError do
-            File.new(t.path)
-          end
+        assert_raises ActiveRecord::Fixture::FormatError do
+          read_yaml "one: two"
         end
       end
 
@@ -57,9 +51,8 @@ module ActiveRecord
           def fixture_helper; "Fixture helper"; end
         end
 
-        tmp_yaml ["curious", "yml"], "one:\n  name: <%= fixture_helper %>\n" do |t|
-          assert_equal({ "one" => { "name" => "Fixture helper" } }, File.new(t.path).rows)
-        end
+        file = read_yaml "one:\n  name: <%= fixture_helper %>\n"
+        assert_equal({ "one" => { "name" => "Fixture helper" } }, file.rows)
       ensure
         ActiveRecord::FixtureSet.context_class.class_eval { remove_method :fixture_helper }
       end
@@ -82,25 +75,16 @@ module ActiveRecord
           "File" => "File"
         } }
 
-        tmp_yaml ["curious", "yml"], yaml do |t|
-          assert_equal golden, File.new(t.path).rows
-        end
+        assert_equal golden, read_yaml(yaml).rows
       end
 
       # Make sure that each fixture gets its own rendering context so that
       # fixtures are independent.
       def test_independent_render_contexts
-        yaml1 = "<% def leaked_method; 'leak'; end %>\n"
-        yaml2 = "one:\n  name: <%= leaked_method %>\n"
+        read_yaml "<% def leaked_method; 'leak'; end %>\n"
 
-        tmp_yaml ["leaky", "yml"], yaml1 do |t1|
-          tmp_yaml ["curious", "yml"], yaml2 do |t2|
-            File.new(t1.path).rows.to_a
-
-            assert_raises(NameError) do
-              File.new(t2.path).rows.to_a
-            end
-          end
+        assert_raises NameError do
+          read_yaml "one:\n  name: <%= leaked_method %>\n"
         end
       end
 
@@ -115,14 +99,9 @@ module ActiveRecord
       end
 
       private
-        def tmp_yaml(name, contents)
-          t = Tempfile.new name
-          t.binmode
-          t.write contents
-          t.close
-          yield t
-        ensure
-          t.close true
+        def read_yaml(contents = "")
+          tmpfile = Tempfile.open("#{rand * 10}.yml") { |f| f.binmode; f << contents }
+          File.new(tmpfile.path)
         end
     end
   end
