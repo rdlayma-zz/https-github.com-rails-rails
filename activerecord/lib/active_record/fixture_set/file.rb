@@ -31,7 +31,6 @@ module ActiveRecord
           ActiveRecord::FixtureSet::RenderContext.create_subclass.new.get_binding
         end
 
-        # Validate our unmarshalled data.
         def validate!(data)
           unless Hash === data || YAML::Omap === data
             raise Fixture::FormatError, "fixture is not a hash: #{@file}"
