@@ -28,7 +28,7 @@ module ActiveRecord
           metadata = ModelMetadata.new(model_class)
 
           @tables[table_name] = fixtures.map do |label, fixture|
-            TableRow.new(fixture, model_metadata: metadata, tables: tables, label: label, timestamp: timestamp)
+            TableRow.new(fixture.to_hash, model_metadata: metadata, tables: tables, label: label, timestamp: timestamp)
           end
         end
     end

@@ -3,13 +3,13 @@
 module ActiveRecord
   class FixtureSet
     class TableRow # :nodoc:
-      def initialize(fixture, model_metadata:, tables:, label:, timestamp:)
+      def initialize(row, model_metadata:, tables:, label:, timestamp:)
+        @row = row
         @model_metadata = model_metadata
         @model_class = model_metadata.model_class
         @tables = tables
         @label = label
         @timestamp = timestamp
-        @row = fixture.to_hash
         fill_row_model_attributes if @model_class
       end
 
