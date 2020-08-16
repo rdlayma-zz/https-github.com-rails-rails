@@ -469,10 +469,8 @@ module ActiveRecord
 
     class ClassCache
       def initialize(class_names, config)
-        @class_names = class_names.stringify_keys
+        @class_names = class_names.keep_if { |_, klass| active_record?(klass) }.stringify_keys
         @config      = config
-
-        @class_names.keep_if { |_, klass| active_record?(klass) }
       end
 
       def [](fs_name)
