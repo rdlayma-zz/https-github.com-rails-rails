@@ -473,8 +473,8 @@ module ActiveRecord
         @config      = config
 
         # Remove string values that aren't constants or subclasses of AR
-        @class_names.delete_if do |klass_name, klass|
-          !insert_class(@class_names, klass_name, klass)
+        @class_names.keep_if do |klass_name, klass|
+          insert_class(@class_names, klass_name, klass)
         end
       end
 
