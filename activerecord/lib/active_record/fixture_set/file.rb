@@ -24,14 +24,9 @@ module ActiveRecord
         rows.each(&block)
       end
 
-      def model_class
+      def configuration
         parse_rows
-        @configuration["model_class"]
-      end
-
-      def ignored_fixtures
-        parse_rows
-        @configuration["ignore"]
+        @configuration.symbolize_keys
       end
 
       private

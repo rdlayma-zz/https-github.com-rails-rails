@@ -133,7 +133,7 @@ END
 
       def test_extracts_model_class_from_config_row
         File.open(::File.join(FIXTURES_ROOT, "other_posts.yml")) do |fh|
-          assert_equal "Post", fh.model_class
+          assert_equal "Post", fh.configuration[:model_class]
         end
       end
 
