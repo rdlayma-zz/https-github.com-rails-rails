@@ -653,18 +653,7 @@ module ActiveRecord
       end
 
       def ignored_fixtures=(base)
-        @ignored_fixtures =
-            case base
-            when Array
-              base
-            when String
-              [base]
-            else
-              []
-            end
-
-        @ignored_fixtures << "DEFAULTS" unless @ignored_fixtures.include?("DEFAULTS")
-        @ignored_fixtures.compact
+        @ignored_fixtures = [ "DEFAULTS" ] | Array(base).compact
       end
 
       # Loads the fixtures from the YAML file at +path+.
