@@ -33,11 +33,7 @@ module ActiveRecord
         end
 
         def fill_timestamps
-          if @model_class.record_timestamps
-            model_metadata.timestamp_column_names.each do |c_name|
-              @row[c_name] = @now unless @row.key?(c_name)
-            end
-          end
+          model_metadata.timestamp_column_names.each { |timestamp| @row[timestamp] ||= @now }
         end
 
         def interpolate_label

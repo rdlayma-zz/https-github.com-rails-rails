@@ -23,7 +23,8 @@ module ActiveRecord
       end
 
       def timestamp_column_names
-        @model_class.all_timestamp_attributes_in_model
+        @model_class.record_timestamps ?
+          @model_class.all_timestamp_attributes_in_model : []
       end
 
       def inheritance_column_name
