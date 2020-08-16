@@ -512,8 +512,8 @@ module ActiveRecord
         connection = block_given? ? block : -> { ActiveRecord::Base.connection }
         cache      = cache_for_connection(connection.call)
 
-        if (fixture_files_to_read = fixture_set_names.reject { |set_name| cache[set_name] }).any?
-          sets = parse_sets(directory, fixture_files_to_read, class_names)
+        if (fixture_files = fixture_set_names.reject { |set_name| cache[set_name] }).any?
+          sets = fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
           insert sets, connection
 
           sets.index_by(&:name).tap do |map|
@@ -541,10 +541,6 @@ module ActiveRecord
       end
 
       private
-        def parse_sets(directory, fixture_files, class_names) # :nodoc:
-          fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
-        end
-
         def insert(fixture_sets, connection) # :nodoc:
           fixture_sets.group_by { |set| set.model_class&.connection || connection.call }.each do |conn, set|
             table_rows_for_connection = Hash.new { |h, k| h[k] = [] }
