@@ -7,25 +7,16 @@ module ActiveRecord
   class FixtureSet
     class FileTest < ActiveRecord::TestCase
       def test_parsing
-        file = File.new(::File.join(FIXTURES_ROOT, "accounts.yml"))
-        assert_equal 6, file.rows.to_a.size
-      end
+        rows = read_fixture(:accounts).rows
 
-      def test_names
-        file = File.new(::File.join(FIXTURES_ROOT, "accounts.yml"))
-        assert_equal [ "signals37", "unknown", "rails_core_account", "last_account", "rails_core_account_2", "odegy_account" ].sort,
-          file.rows.to_a.map(&:first).sort
-      end
-
-      def test_values
-        file = File.new(::File.join(FIXTURES_ROOT, "accounts.yml"))
-        assert_equal [ 1, 2, 3, 4, 5, 6 ], file.rows.map { |row| row.last["id"] }.sort
+        assert_equal 6, rows.size
+        assert_equal %w[ signals37 unknown rails_core_account last_account rails_core_account_2 odegy_account ].sort, rows.keys.sort
+        assert_equal (1..6).to_a, rows.values.map { |row| row["id"] }.sort
       end
 
       def test_erb_processing
-        file = File.new(::File.join(FIXTURES_ROOT, "developers.yml"))
         devs = Array.new(8) { |i| "dev_#{i + 3}" }
-        assert_equal [], devs - file.rows.to_a.map(&:first)
+        assert_equal [], devs - read_fixture(:developers).rows.to_a.map(&:first)
       end
 
       def test_empty_file
@@ -89,16 +80,18 @@ module ActiveRecord
       end
 
       def test_removes_fixture_config_row
-        file = File.new(::File.join(FIXTURES_ROOT, "other_posts.yml"))
-        assert_equal [ "second_welcome" ], file.rows.map(&:first)
+        assert_equal [ "second_welcome" ], read_fixture(:other_posts).rows.map(&:first)
       end
 
       def test_extracts_model_class_from_config_row
-        file = File.new(::File.join(FIXTURES_ROOT, "other_posts.yml"))
-        assert_equal "Post", file.configuration[:model_class]
+        assert_equal "Post", read_fixture(:other_posts).configuration[:model_class]
       end
 
       private
+        def read_fixture(name)
+          File.new ::File.join(FIXTURES_ROOT, "#{name}.yml")
+        end
+
         def read_yaml(contents = "")
           tmpfile = Tempfile.open("#{rand * 10}.yml") { |f| f.binmode; f << contents }
           File.new(tmpfile.path)
