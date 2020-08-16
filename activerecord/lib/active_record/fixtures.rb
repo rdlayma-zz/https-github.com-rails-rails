@@ -469,15 +469,14 @@ module ActiveRecord
     cattr_accessor :all_loaded_fixtures, default: {}
 
     class ClassCache
-      def initialize(class_names, config)
+      def initialize(class_names, &classifier)
         @class_names = class_names.keep_if { |_, klass| active_record?(klass) }.stringify_keys
-        @config      = config
+        @classifier  = classifier
       end
 
       def [](fs_name)
         @class_names.fetch(fs_name) do
-          klass = fixture_model_klass(fs_name)
-          @class_names[fs_name] = active_record?(klass) ? klass : nil
+          @class_names[fs_name] = @classifier.call(fs_name).yield_self { |klass| active_record?(klass) ? klass : nil }
         end
       end
 
@@ -485,15 +484,12 @@ module ActiveRecord
         def active_record?(klass)
           klass && klass < ActiveRecord::Base
         end
-
-        def fixture_model_klass(fs_name)
-          ActiveRecord::FixtureSet.fixture_model_name(fs_name, @config).safe_constantize
-        end
     end
 
     class << self
-      def fixture_model_name(set_name, config = ActiveRecord::Base) # :nodoc:
-        config.pluralize_table_names ? set_name.singularize.camelize : set_name.camelize
+      def fixture_model_klass(set_name, config = ActiveRecord::Base) # :nodoc:
+        set_name = set_name.singularize if config.pluralize_table_names
+        set_name.camelize.safe_constantize
       end
 
       def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
@@ -525,7 +521,7 @@ module ActiveRecord
 
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
         fixture_set_names = Array(fixture_set_names).map(&:to_s)
-        class_names = ClassCache.new class_names, config
+        class_names = ClassCache.new(class_names) { |accessed_name| fixture_model_klass(accessed_name, config) }
 
         # FIXME: Apparently JK uses this.
         connection = block_given? ? block : -> { ActiveRecord::Base.connection }
