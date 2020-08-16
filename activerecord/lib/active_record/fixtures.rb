@@ -542,26 +542,18 @@ module ActiveRecord
         end
       end
 
-      def create_fixtures(fixtures_directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
+      def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
         fixture_set_names = Array(fixture_set_names).map(&:to_s)
         class_names = ClassCache.new class_names, config
 
         # FIXME: Apparently JK uses this.
         connection = block_given? ? block : lambda { ActiveRecord::Base.connection }
 
-        fixture_files_to_read = fixture_set_names.reject do |fs_name|
-          fixture_is_cached?(connection.call, fs_name)
-        end
-
-        if fixture_files_to_read.any?
-          fixtures_map = read_and_insert(
-            fixtures_directory,
-            fixture_files_to_read,
-            class_names,
-            connection,
-          )
+        if (fixture_files_to_read = fixture_set_names.reject { |fs_name| fixture_is_cached?(connection.call, fs_name) }).any?
+          fixtures_map = read_and_insert(directory, fixture_files_to_read, class_names, connection)
           cache_fixtures(connection.call, fixtures_map)
         end
+
         cached_fixtures(connection.call, fixture_set_names)
       end
 
