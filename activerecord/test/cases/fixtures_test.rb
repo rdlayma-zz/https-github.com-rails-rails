@@ -1063,8 +1063,8 @@ class FasterFixturesTest < ActiveRecord::TestCase
   end
 
   def test_cache
-    assert ActiveRecord::FixtureSet.fixture_is_cached?(ActiveRecord::Base.connection, "categories")
-    assert ActiveRecord::FixtureSet.fixture_is_cached?(ActiveRecord::Base.connection, "authors")
+    assert ActiveRecord::FixtureSet.cache_for_connection(ActiveRecord::Base.connection)["categories"]
+    assert ActiveRecord::FixtureSet.cache_for_connection(ActiveRecord::Base.connection)["authors"]
 
     assert_no_queries do
       create_fixtures("categories")
@@ -1072,7 +1072,7 @@ class FasterFixturesTest < ActiveRecord::TestCase
     end
 
     load_extra_fixture("posts")
-    assert ActiveRecord::FixtureSet.fixture_is_cached?(ActiveRecord::Base.connection, "posts")
+    assert ActiveRecord::FixtureSet.cache_for_connection(ActiveRecord::Base.connection)["posts"]
     self.class.setup_fixture_accessors :posts
     assert_equal "Welcome to the weblog", posts(:welcome).title
   end

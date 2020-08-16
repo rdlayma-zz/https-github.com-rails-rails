@@ -508,22 +508,6 @@ module ActiveRecord
         @@all_cached_fixtures[connection]
       end
 
-      def fixture_is_cached?(connection, table_name)
-        cache_for_connection(connection)[table_name]
-      end
-
-      def cached_fixtures(connection, keys_to_fetch = nil)
-        if keys_to_fetch
-          cache_for_connection(connection).values_at(*keys_to_fetch)
-        else
-          cache_for_connection(connection).values
-        end
-      end
-
-      def cache_fixtures(connection, fixtures_map)
-        cache_for_connection(connection).update(fixtures_map)
-      end
-
       def instantiate_fixtures(object, fixture_set, load_instances = true)
         return unless load_instances
         fixture_set.each do |fixture_name, fixture|
@@ -544,14 +528,14 @@ module ActiveRecord
         class_names = ClassCache.new class_names, config
 
         # FIXME: Apparently JK uses this.
-        connection = block_given? ? block : lambda { ActiveRecord::Base.connection }
+        connection = block_given? ? block : -> { ActiveRecord::Base.connection }
+        cache      = cache_for_connection(connection.call)
 
-        if (fixture_files_to_read = fixture_set_names.reject { |fs_name| fixture_is_cached?(connection.call, fs_name) }).any?
-          fixtures_map = read_and_insert(directory, fixture_files_to_read, class_names, connection)
-          cache_fixtures(connection.call, fixtures_map)
+        if (fixture_files_to_read = fixture_set_names.reject { |fs_name| cache[fs_name] }).any?
+          cache.update read_and_insert(directory, fixture_files_to_read, class_names, connection)
         end
 
-        cached_fixtures(connection.call, fixture_set_names)
+        cache.values_at(*fixture_set_names)
       end
 
       # Returns a consistent, platform-independent identifier for +label+.
