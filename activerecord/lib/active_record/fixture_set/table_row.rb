@@ -44,7 +44,7 @@ module ActiveRecord
 
         def generate_primary_key
           if model_metadata.has_primary_key_column?
-            @row[model_metadata.primary_key_name] ||= ActiveRecord::FixtureSet.identify(@label, model_metadata.primary_key_type)
+            @row[model_metadata.primary_key_name] ||= value_from_identification(@label, @model_class, @model_class.primary_key)
           end
         end
 
@@ -63,7 +63,7 @@ module ActiveRecord
               # Do not replace association name with association foreign key if they are named the same
               if association.name.to_s != association.join_foreign_key && value = @row.delete(association.name.to_s)
                 value, type = value.scan(/\b\w+/)
-                @row[association.join_foreign_key]  = ActiveRecord::FixtureSet.identify(value, reflection_class.type_for_attribute(association.join_foreign_key).type)
+                @row[association.join_foreign_key]  = value_from_identification(value, reflection_class, association.join_foreign_key)
                 @row[association.join_foreign_type] = type if association.polymorphic? && type
               end
             when :has_many
@@ -79,7 +79,11 @@ module ActiveRecord
 
           @tables[association.through_reflection.table_name].concat \
             targets.map { |target| { association.through_reflection.foreign_key => @row[model_metadata.primary_key_name],
-                association.foreign_key => ActiveRecord::FixtureSet.identify(target, association.klass.type_for_attribute(association.klass.primary_key).type) } }
+                association.foreign_key => value_from_identification(target, association.klass, association.klass.primary_key) } }
+        end
+
+        def value_from_identification(value, klass, key)
+          ActiveRecord::FixtureSet.identify(value, klass.type_for_attribute(key).type)
         end
     end
   end

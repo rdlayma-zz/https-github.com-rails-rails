@@ -13,10 +13,6 @@ module ActiveRecord
         @primary_key_name ||= @model_class.primary_key
       end
 
-      def primary_key_type
-        @primary_key_type ||= @model_class.type_for_attribute(@model_class.primary_key).type
-      end
-
       def has_primary_key_column?
         @has_primary_key_column ||= primary_key_name &&
           @model_class.columns.any? { |col| col.name == primary_key_name }
