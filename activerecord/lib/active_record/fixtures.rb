@@ -9,7 +9,8 @@ require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/digest/uuid"
 require "active_record/fixture_set/file"
 require "active_record/fixture_set/render_context"
-require "active_record/fixture_set/table_rows"
+require "active_record/fixture_set/table_row"
+require "active_record/fixture_set/model_metadata"
 require "active_record/test_fixtures"
 
 module ActiveRecord
@@ -578,7 +579,16 @@ module ActiveRecord
     # a list of rows to insert to that table.
     def table_rows
       fixtures.except!(*ignored_fixtures)
-      TableRows.new(table_name, model_class: model_class, fixtures: fixtures, timestamp: appropriate_column_timestamp).to_hash
+
+      tables = Hash.new { |h,k| h[k] = [] }
+      tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
+
+      metadata, timestamp = ModelMetadata.new(model_class), appropriate_column_timestamp
+
+      tables[table_name] = fixtures.map do |label, fixture|
+        TableRow.new(fixture.to_hash, model_metadata: metadata, tables: tables, label: label, timestamp: timestamp)
+      end
+      tables.transform_values { |rows| rows.map(&:to_hash) }
     end
 
     private
