@@ -64,10 +64,7 @@ module ActiveRecord
               fk_name = association.join_foreign_key
 
               if association.name.to_s != fk_name && value = @row.delete(association.name.to_s)
-                if association.polymorphic? && value.sub!(/\s*\(([^\)]*)\)\s*$/, "")
-                  # support polymorphic belongs_to as "label (Type)"
-                  @row[association.join_foreign_type] = $1
-                end
+                extract_polymorphic_association_type_from_foreign_key_declaration association, value
 
                 @row[fk_name] = ActiveRecord::FixtureSet.identify(value, reflection_class.type_for_attribute(fk_name).type)
               end
@@ -76,6 +73,13 @@ module ActiveRecord
                 add_join_records_sidestepping_fixtures_file(association)
               end
             end
+          end
+        end
+
+        def extract_polymorphic_association_type_from_foreign_key_declaration(association, value)
+          # Support polymorphic belongs_to as "label (Type)"
+          if association.polymorphic? && value.sub!(/\s*\(([^\)]*)\)\s*$/, "")
+            @row[association.join_foreign_type] = $1
           end
         end
 
