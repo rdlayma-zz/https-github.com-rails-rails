@@ -212,13 +212,18 @@ module ActiveRecord
       end
 
       def instantiate_fixtures
-        fixture_sets = pre_loaded_fixtures ? ActiveRecord::FixtureSet.all_loaded_fixtures : Hash(@loaded_fixtures)
+        if (pre_loaded_fixtures && all_loaded_fixtures.empty?) || @loaded_fixtures.nil?
+          raise RuntimeError, "Load fixtures before instantiating them"
+        end
 
-        if fixture_sets.empty?
-          raise RuntimeError, "Load fixtures before instantiating them."
-        elsif load_instances?
+        if load_instances?
+          fixture_sets = pre_loaded_fixtures ? all_loaded_fixtures : @loaded_fixtures
           fixture_sets.each_value { |set| instantiate_fixture_set(set) }
         end
+      end
+
+      def all_loaded_fixtures
+        ActiveRecord::FixtureSet.all_loaded_fixtures
       end
 
       def instantiate_fixture_set(fixture_set)
