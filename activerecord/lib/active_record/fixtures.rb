@@ -5,6 +5,7 @@ require "yaml"
 require "zlib"
 require "set"
 require "active_support/dependencies"
+require "active_support/core_ext/module/delegation"
 require "active_support/core_ext/digest/uuid"
 require "active_record/fixture_set/file"
 require "active_record/fixture_set/render_context"
@@ -626,22 +627,7 @@ module ActiveRecord
 
       @table_name = model_class&.table_name || self.class.default_fixture_table_name(name, config)
     end
-
-    def [](x)
-      fixtures[x]
-    end
-
-    def []=(k, v)
-      fixtures[k] = v
-    end
-
-    def each(&block)
-      fixtures.each(&block)
-    end
-
-    def size
-      fixtures.size
-    end
+    delegate :[], :[]=, :each, :size, to: :fixtures
 
     # Returns a hash of rows to be inserted. The key is the table, the value is
     # a list of rows to insert to that table.
@@ -720,17 +706,10 @@ module ActiveRecord
       @fixture     = fixture
       @model_class = model_class
     end
+    delegate :[], :each, to: :fixture
 
     def class_name
       model_class.name if model_class
-    end
-
-    def each
-      fixture.each { |item| yield item }
-    end
-
-    def [](key)
-      fixture[key]
     end
 
     alias :to_hash :fixture
