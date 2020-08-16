@@ -21,7 +21,8 @@ module ActiveRecord
       end
 
       def each(&block)
-        rows.each(&block)
+        parse_rows
+        @rows.each(&block)
       end
 
       def configuration
@@ -30,11 +31,6 @@ module ActiveRecord
       end
 
       private
-        def rows
-          parse_rows
-          @rows
-        end
-
         def parse_rows
           unless defined?(@rows)
             @rows = read_data
