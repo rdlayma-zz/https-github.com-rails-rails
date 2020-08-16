@@ -24,16 +24,13 @@ module ActiveRecord
         @tables.transform_values { |rows| rows.map(&:to_hash) }
       end
 
-      def model_metadata
-        @model_metadata ||= ModelMetadata.new(model_class)
-      end
-
       private
         def build_table_rows_from(table_name, fixtures, config)
+          metadata = ModelMetadata.new(model_class)
           now = config.default_timezone == :utc ? Time.now.utc : Time.now
 
           @tables[table_name] = fixtures.map do |label, fixture|
-            TableRow.new(fixture, model_metadata: model_metadata, tables: tables, label: label, now: now)
+            TableRow.new(fixture, model_metadata: metadata, tables: tables, label: label, now: now)
           end
         end
     end
