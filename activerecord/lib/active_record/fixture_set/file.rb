@@ -49,17 +49,22 @@ module ActiveRecord
         end
 
         def raw_rows
-          @raw_rows ||= begin
-            data = ActiveSupport::ConfigurationFile.parse(@file, context:
-              ActiveRecord::FixtureSet::RenderContext.create_subclass.new.get_binding)
-            data ? validate(data).to_a : []
-          rescue RuntimeError => error
-            raise Fixture::FormatError, error.message
-          end
+          @raw_rows ||= Array read_data
+        rescue RuntimeError => error
+          raise Fixture::FormatError, error.message
+        end
+
+        def read_data
+          ActiveSupport::ConfigurationFile.parse(@file, context: new_render_context)
+            .tap { |data| validate!(data) if data }
+        end
+
+        def new_render_context
+          ActiveRecord::FixtureSet::RenderContext.create_subclass.new.get_binding
         end
 
         # Validate our unmarshalled data.
-        def validate(data)
+        def validate!(data)
           unless Hash === data || YAML::Omap === data
             raise Fixture::FormatError, "fixture is not a hash: #{@file}"
           end
@@ -68,7 +73,6 @@ module ActiveRecord
           if invalid.any?
             raise Fixture::FormatError, "fixture key is not a hash: #{@file}, keys: #{invalid.keys.inspect}"
           end
-          data
         end
     end
   end
