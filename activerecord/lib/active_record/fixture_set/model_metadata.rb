@@ -3,6 +3,8 @@
 module ActiveRecord
   class FixtureSet
     class ModelMetadata # :nodoc:
+      attr_reader :model_class
+
       def initialize(model_class)
         @model_class = model_class
       end

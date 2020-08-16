@@ -48,12 +48,12 @@ module ActiveRecord
       end
 
       private
-        def model_metadata
-          @table_rows.model_metadata
+        def model_class
+          model_metadata.model_class
         end
 
-        def model_class
-          @table_rows.model_class
+        def model_metadata
+          @table_rows.model_metadata
         end
 
         def fill_row_model_attributes
