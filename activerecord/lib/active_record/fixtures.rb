@@ -509,8 +509,8 @@ module ActiveRecord
         class_names = ClassCache.new(class_names) { |accessed_name| fixture_model_klass(accessed_name, config) }
 
         # FIXME: Apparently JK uses this.
-        connection = block_given? ? block : -> { ActiveRecord::Base.connection }
-        cache      = cache_for_connection(connection.call)
+        connection = block&.call || ActiveRecord::Base.connection
+        cache      = cache_for_connection(connection)
 
         if (fixture_files = fixture_set_names - cache.keys).any?
           sets = fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
@@ -542,7 +542,7 @@ module ActiveRecord
 
       private
         def insert(fixture_sets, connection) # :nodoc:
-          fixture_sets.group_by { |set| set.model_class&.connection || connection.call }.each do |conn, set|
+          fixture_sets.group_by { |set| set.model_class&.connection || connection }.each do |conn, set|
             table_rows_for_connection = Hash.new { |h, k| h[k] = [] }
 
             set.each do |fixture_set|
