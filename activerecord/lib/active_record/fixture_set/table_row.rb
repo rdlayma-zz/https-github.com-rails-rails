@@ -5,11 +5,12 @@ module ActiveRecord
     class TableRow # :nodoc:
       def initialize(fixture, model_metadata:, tables:, label:, now:)
         @model_metadata = model_metadata
+        @model_class = model_metadata.model_class
         @tables = tables
         @label = label
         @now = now
         @row = fixture.to_hash
-        fill_row_model_attributes
+        fill_row_model_attributes if @model_class
       end
 
       def to_hash
@@ -19,12 +20,7 @@ module ActiveRecord
       private
         attr_reader :model_metadata
 
-        def model_class
-          model_metadata.model_class
-        end
-
         def fill_row_model_attributes
-          return unless model_class
           fill_timestamps
           interpolate_label
           generate_primary_key
@@ -34,14 +30,14 @@ module ActiveRecord
 
         def reflection_class
           @reflection_class ||= if @row.include?(model_metadata.inheritance_column_name)
-            @row[model_metadata.inheritance_column_name].constantize rescue model_class
+            @row[model_metadata.inheritance_column_name].constantize rescue @model_class
           else
-            model_class
+            @model_class
           end
         end
 
         def fill_timestamps
-          if model_class.record_timestamps
+          if @model_class.record_timestamps
             model_metadata.timestamp_column_names.each do |c_name|
               @row[c_name] = @now unless @row.key?(c_name)
             end
@@ -63,7 +59,7 @@ module ActiveRecord
         end
 
         def resolve_enums
-          model_class.defined_enums.each do |name, values|
+          @model_class.defined_enums.each do |name, values|
             if @row.include?(name)
               @row[name] = values.fetch(@row[name], @row[name])
             end
