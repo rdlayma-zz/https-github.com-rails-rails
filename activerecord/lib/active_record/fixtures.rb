@@ -589,14 +589,10 @@ module ActiveRecord
     attr_reader :table_name, :name, :fixtures, :model_class, :ignored_fixtures, :config
 
     def initialize(_, name, class_name, path, config = ActiveRecord::Base)
-      @name     = name
-      @path     = path
-      @config   = config
-
+      @name, @path, @config = name, path, config
       self.model_class = class_name
 
-      @fixtures = read_fixture_files fixture_files
-
+      @fixtures   = read_fixture_files fixture_files
       @table_name = model_class&.table_name || self.class.fixture_table_name(name, config)
     end
     delegate :[], :[]=, :each, :size, to: :fixtures
