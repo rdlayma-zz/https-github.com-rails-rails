@@ -671,9 +671,8 @@ module ActiveRecord
               self.ignored_fixtures ||= config[:ignore]
             end
 
-            fixture_file.each do |fixture_name, row|
-              fixtures[fixture_name] = ActiveRecord::Fixture.new(row, model_class)
-            end
+            fixtures.merge! \
+              fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row, model_class) }
           end
         end
       end

@@ -5,36 +5,23 @@ require "active_support/configuration_file"
 module ActiveRecord
   class FixtureSet
     class File # :nodoc:
-      include Enumerable
-
-      ##
-      # Open a fixture file named +file+.  When called with a block, the block
-      # is called with the filehandle and the filehandle is automatically closed
-      # when the block finishes.
       def self.open(file)
         x = new file
         block_given? ? yield(x) : x
       end
 
+      attr_reader :rows, :configuration
+
       def initialize(file)
         @file = file
-      end
-
-      def each(&block)
         parse_rows
-        @rows.each(&block)
-      end
-
-      def configuration
-        parse_rows
-        @configuration.symbolize_keys
       end
 
       private
         def parse_rows
           unless defined?(@rows)
             @rows = read_data
-            @configuration = @rows.delete("_fixture") || {}
+            @configuration = (@rows.delete("_fixture") || {}).symbolize_keys
           end
         end
 

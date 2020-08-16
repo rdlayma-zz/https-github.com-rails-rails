@@ -8,14 +8,14 @@ module ActiveRecord
     class FileTest < ActiveRecord::TestCase
       def test_open
         fh = File.open(::File.join(FIXTURES_ROOT, "accounts.yml"))
-        assert_equal 6, fh.to_a.length
+        assert_equal 6, fh.rows.to_a.length
       end
 
       def test_open_with_block
         called = false
         File.open(::File.join(FIXTURES_ROOT, "accounts.yml")) do |fh|
           called = true
-          assert_equal 6, fh.to_a.length
+          assert_equal 6, fh.rows.to_a.length
         end
         assert called, "block called"
       end
@@ -27,13 +27,13 @@ module ActiveRecord
                         "rails_core_account",
                         "last_account",
                         "rails_core_account_2",
-                        "odegy_account"].sort, fh.to_a.map(&:first).sort
+                        "odegy_account"].sort, fh.rows.to_a.map(&:first).sort
         end
       end
 
       def test_values
         File.open(::File.join(FIXTURES_ROOT, "accounts.yml")) do |fh|
-          assert_equal [1, 2, 3, 4, 5, 6].sort, fh.to_a.map(&:last).map { |x|
+          assert_equal [1, 2, 3, 4, 5, 6].sort, fh.rows.to_a.map(&:last).map { |x|
             x["id"]
           }.sort
         end
@@ -42,13 +42,13 @@ module ActiveRecord
       def test_erb_processing
         File.open(::File.join(FIXTURES_ROOT, "developers.yml")) do |fh|
           devs = Array.new(8) { |i| "dev_#{i + 3}" }
-          assert_equal [], devs - fh.to_a.map(&:first)
+          assert_equal [], devs - fh.rows.to_a.map(&:first)
         end
       end
 
       def test_empty_file
         tmp_yaml ["empty", "yml"], "" do |t|
-          assert_equal [], File.open(t.path) { |fh| fh.to_a }
+          assert_equal [], File.open(t.path) { |fh| fh.rows.to_a }
         end
       end
 
@@ -57,7 +57,7 @@ module ActiveRecord
       def test_wrong_fixture_format_string
         tmp_yaml ["empty", "yml"], "qwerty" do |t|
           assert_raises(ActiveRecord::Fixture::FormatError) do
-            File.open(t.path) { |fh| fh.to_a }
+            File.open(t.path) { |fh| fh.rows.to_a }
           end
         end
       end
@@ -65,7 +65,7 @@ module ActiveRecord
       def test_wrong_fixture_format_nested
         tmp_yaml ["empty", "yml"], "one: two" do |t|
           assert_raises(ActiveRecord::Fixture::FormatError) do
-            File.open(t.path) { |fh| fh.to_a }
+            File.open(t.path) { |fh| fh.rows.to_a }
           end
         end
       end
@@ -80,7 +80,7 @@ module ActiveRecord
         tmp_yaml ["curious", "yml"], yaml do |t|
           golden =
               [["one", { "name" => "Fixture helper" }]]
-          assert_equal golden, File.open(t.path) { |fh| fh.to_a }
+          assert_equal golden, File.open(t.path) { |fh| fh.rows.to_a }
         end
         ActiveRecord::FixtureSet.context_class.class_eval do
           remove_method :fixture_helper
@@ -106,7 +106,7 @@ END
         }]]
 
         tmp_yaml ["curious", "yml"], yaml do |t|
-          assert_equal golden, File.open(t.path) { |fh| fh.to_a }
+          assert_equal golden, File.open(t.path) { |fh| fh.rows.to_a }
         end
       end
 
@@ -117,9 +117,9 @@ END
         yaml2 = "one:\n  name: <%= leaked_method %>\n"
         tmp_yaml ["leaky", "yml"], yaml1 do |t1|
           tmp_yaml ["curious", "yml"], yaml2 do |t2|
-            File.open(t1.path) { |fh| fh.to_a }
+            File.open(t1.path) { |fh| fh.rows.to_a }
             assert_raises(NameError) do
-              File.open(t2.path) { |fh| fh.to_a }
+              File.open(t2.path) { |fh| fh.rows.to_a }
             end
           end
         end
@@ -127,7 +127,7 @@ END
 
       def test_removes_fixture_config_row
         File.open(::File.join(FIXTURES_ROOT, "other_posts.yml")) do |fh|
-          assert_equal(["second_welcome"], fh.each.map { |name, _| name })
+          assert_equal(["second_welcome"], fh.rows.map { |name, _| name })
         end
       end
 
