@@ -486,13 +486,12 @@ module ActiveRecord
       end
 
       private
+        def active_record?(klass)
+          klass && klass < ActiveRecord::Base
+        end
+
         def insert_class(class_names, name, klass)
-          # We only want to deal with AR objects.
-          if klass && klass < ActiveRecord::Base
-            class_names[name] = klass
-          else
-            class_names[name] = nil
-          end
+          class_names[name] = active_record?(klass) ? klass : nil
         end
 
         def default_fixture_model(fs_name, config)
