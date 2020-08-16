@@ -73,7 +73,6 @@ module ActiveRecord
         end
 
         def fill_timestamps
-          # fill in timestamp columns if they aren't specified and the model is set to record_timestamps
           if model_class.record_timestamps
             model_metadata.timestamp_column_names.each do |c_name|
               @row[c_name] = @now unless @row.key?(c_name)
@@ -82,14 +81,12 @@ module ActiveRecord
         end
 
         def interpolate_label
-          # interpolate the fixture label
           @row.each do |key, value|
             @row[key] = value.gsub("$LABEL", @label.to_s) if value.is_a?(String)
           end
         end
 
         def generate_primary_key
-          # generate a primary key if necessary
           if model_metadata.has_primary_key_column? && !@row.include?(model_metadata.primary_key_name)
             @row[model_metadata.primary_key_name] = ActiveRecord::FixtureSet.identify(
               @label, model_metadata.primary_key_type
@@ -106,7 +103,6 @@ module ActiveRecord
         end
 
         def resolve_sti_reflections
-          # If STI is used, find the correct subclass for association reflection
           reflection_class._reflections.each_value do |association|
             case association.macro
             when :belongs_to
@@ -124,14 +120,13 @@ module ActiveRecord
               end
             when :has_many
               if association.options[:through]
-                add_join_records(HasManyThroughProxy.new(association))
+                add_join_records_sidestepping_fixtures_file(HasManyThroughProxy.new(association))
               end
             end
           end
         end
 
-        def add_join_records(association)
-          # This is the case when the join table has no fixtures file
+        def add_join_records_sidestepping_fixtures_file(association)
           if (targets = @row.delete(association.name.to_s))
             table_name  = association.join_table
             column_type = association.primary_key_type
