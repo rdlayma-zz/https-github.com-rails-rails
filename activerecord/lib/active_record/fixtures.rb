@@ -578,7 +578,7 @@ module ActiveRecord
     # a list of rows to insert to that table.
     def table_rows
       fixtures.except!(*ignored_fixtures)
-      TableRows.new(table_name, model_class: model_class, fixtures: fixtures, config: config).to_hash
+      TableRows.new(table_name, model_class: model_class, fixtures: fixtures, timestamp: appropriate_column_timestamp).to_hash
     end
 
     private
@@ -589,6 +589,10 @@ module ActiveRecord
 
       def ignored_fixtures=(base)
         @ignored_fixtures = [ "DEFAULTS" ] | Array(base).compact
+      end
+
+      def appropriate_column_timestamp
+        config.default_timezone == :utc ? Time.now.utc : Time.now
       end
 
       # Loads the fixtures from the YAML file at +path+.

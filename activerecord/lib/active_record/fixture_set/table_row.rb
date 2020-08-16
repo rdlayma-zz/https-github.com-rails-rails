@@ -3,12 +3,12 @@
 module ActiveRecord
   class FixtureSet
     class TableRow # :nodoc:
-      def initialize(fixture, model_metadata:, tables:, label:, now:)
+      def initialize(fixture, model_metadata:, tables:, label:, timestamp:)
         @model_metadata = model_metadata
         @model_class = model_metadata.model_class
         @tables = tables
         @label = label
-        @now = now
+        @timestamp = timestamp
         @row = fixture.to_hash
         fill_row_model_attributes if @model_class
       end
@@ -33,7 +33,7 @@ module ActiveRecord
         end
 
         def fill_timestamps
-          model_metadata.timestamp_column_names.each { |timestamp| @row[timestamp] ||= @now }
+          model_metadata.timestamp_column_names.each { |timestamp| @row[timestamp] ||= @timestamp }
         end
 
         def interpolate_label
