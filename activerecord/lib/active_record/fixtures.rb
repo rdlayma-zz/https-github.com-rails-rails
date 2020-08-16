@@ -513,7 +513,10 @@ module ActiveRecord
         cache      = cache_for_connection(connection.call)
 
         if (fixture_files_to_read = fixture_set_names.reject { |set_name| cache[set_name] }).any?
-          read_and_insert(directory, fixture_files_to_read, class_names, connection).index_by(&:name).tap do |map|
+          sets = parse_sets(directory, fixture_files_to_read, class_names)
+          insert sets, connection
+
+          sets.index_by(&:name).tap do |map|
             cache.update map
             all_loaded_fixtures.update map
           end
@@ -538,10 +541,8 @@ module ActiveRecord
       end
 
       private
-        def read_and_insert(directory, fixture_files, class_names, connection) # :nodoc:
-          fixture_sets = fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
-          insert fixture_sets, connection
-          fixture_sets
+        def parse_sets(directory, fixture_files, class_names) # :nodoc:
+          fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
         end
 
         def insert(fixture_sets, connection) # :nodoc:
