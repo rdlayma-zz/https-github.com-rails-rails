@@ -472,10 +472,7 @@ module ActiveRecord
         @class_names = class_names.stringify_keys
         @config      = config
 
-        # Remove string values that aren't constants or subclasses of AR
-        @class_names.keep_if do |klass_name, klass|
-          insert_class(@class_names, klass_name, klass)
-        end
+        @class_names.keep_if { |_, klass| active_record?(klass) }
       end
 
       def [](fs_name)
