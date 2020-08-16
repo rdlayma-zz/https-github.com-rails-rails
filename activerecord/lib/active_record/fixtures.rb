@@ -665,7 +665,7 @@ module ActiveRecord
         } + [yaml_file_path(path)]
 
         yaml_files.each_with_object({}) do |file, fixtures|
-          FixtureSet::File.open(file) do |fixture_file|
+          FixtureSet::File.new(file).tap do |fixture_file|
             fixture_file.configuration.tap do |config|
               self.model_class ||= config[:model_class] if config[:model_class]
               self.ignored_fixtures ||= config[:ignore]

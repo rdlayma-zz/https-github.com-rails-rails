@@ -5,11 +5,6 @@ require "active_support/configuration_file"
 module ActiveRecord
   class FixtureSet
     class File # :nodoc:
-      def self.open(file)
-        x = new file
-        block_given? ? yield(x) : x
-      end
-
       attr_reader :rows, :configuration
 
       def initialize(file)
