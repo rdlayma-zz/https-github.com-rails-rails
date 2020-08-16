@@ -497,7 +497,7 @@ module ActiveRecord
       end
 
       def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
-        :"#{config.table_name_prefix}#{set_name.tr('/', '_')}#{config.table_name_suffix}"
+        :"#{config.table_name_prefix}#{set_name.tr("/", "_")}#{config.table_name_suffix}"
       end
 
       def reset_cache
