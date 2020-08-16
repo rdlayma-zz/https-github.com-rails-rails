@@ -67,21 +67,19 @@ module ActiveRecord
                 @row[association.join_foreign_type] = type if association.polymorphic? && type
               end
             when :has_many
-              if association.options[:through]
-                add_join_records_sidestepping_fixtures_file(association)
+              if association.options[:through] && value = @row.delete(association.name.to_s)
+                add_join_records_sidestepping_fixtures_file(association, value)
               end
             end
           end
         end
 
-        def add_join_records_sidestepping_fixtures_file(association)
-          if targets = @row.delete(association.name.to_s)
-            targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
+        def add_join_records_sidestepping_fixtures_file(association, targets)
+          targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
 
-            @tables[association.through_reflection.table_name].concat \
-              targets.map { |target| { association.through_reflection.foreign_key => @row[model_metadata.primary_key_name],
-                  association.foreign_key => ActiveRecord::FixtureSet.identify(target, association.klass.type_for_attribute(association.klass.primary_key).type) } }
-          end
+          @tables[association.through_reflection.table_name].concat \
+            targets.map { |target| { association.through_reflection.foreign_key => @row[model_metadata.primary_key_name],
+                association.foreign_key => ActiveRecord::FixtureSet.identify(target, association.klass.type_for_attribute(association.klass.primary_key).type) } }
         end
     end
   end
