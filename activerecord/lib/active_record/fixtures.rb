@@ -632,15 +632,8 @@ module ActiveRecord
     # Returns a hash of rows to be inserted. The key is the table, the value is
     # a list of rows to insert to that table.
     def table_rows
-      # allow specifying fixtures to be ignored by setting `ignore` in `_fixture` section
       fixtures.except!(*ignored_fixtures)
-
-      TableRows.new(
-        table_name,
-        model_class: model_class,
-        fixtures: fixtures,
-        config: config,
-      ).to_hash
+      TableRows.new(table_name, model_class: model_class, fixtures: fixtures, config: config).to_hash
     end
 
     private
