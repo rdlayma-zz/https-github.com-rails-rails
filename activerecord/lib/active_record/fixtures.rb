@@ -580,7 +580,7 @@ module ActiveRecord
     def table_rows
       fixtures.except!(*ignored_fixtures)
 
-      tables = Hash.new { |h,k| h[k] = [] }
+      tables = Hash.new { |h, k| h[k] = [] }
       tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
 
       metadata = ModelMetadata.new(model_class)
