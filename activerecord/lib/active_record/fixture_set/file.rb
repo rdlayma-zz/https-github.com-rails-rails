@@ -44,8 +44,10 @@ module ActiveRecord
         end
 
         def parse_rows
-          @rows = read_data
-          @config_row = @rows.delete("_fixture") || {}
+          unless defined?(@rows)
+            @rows = read_data
+            @config_row = @rows.delete("_fixture") || {}
+          end
         end
 
         def read_data
