@@ -10,11 +10,11 @@ module ActiveRecord
       end
 
       def primary_key_name
-        @primary_key_name ||= @model_class && @model_class.primary_key
+        @primary_key_name ||= @model_class.primary_key
       end
 
       def primary_key_type
-        @primary_key_type ||= @model_class && @model_class.type_for_attribute(@model_class.primary_key).type
+        @primary_key_type ||= @model_class.type_for_attribute(@model_class.primary_key).type
       end
 
       def has_primary_key_column?
@@ -27,7 +27,7 @@ module ActiveRecord
       end
 
       def inheritance_column_name
-        @inheritance_column_name ||= @model_class && @model_class.inheritance_column
+        @inheritance_column_name ||= @model_class.inheritance_column
       end
     end
   end
