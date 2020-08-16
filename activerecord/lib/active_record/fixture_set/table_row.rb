@@ -61,25 +61,16 @@ module ActiveRecord
             case association.macro
             when :belongs_to
               # Do not replace association name with association foreign key if they are named the same
-              fk_name = association.join_foreign_key
-
-              if association.name.to_s != fk_name && value = @row.delete(association.name.to_s)
-                extract_polymorphic_association_type_from_foreign_key_declaration association, value
-
-                @row[fk_name] = ActiveRecord::FixtureSet.identify(value, reflection_class.type_for_attribute(fk_name).type)
+              if association.name.to_s != association.join_foreign_key && value = @row.delete(association.name.to_s)
+                value, type = value.scan(/\b\w+/)
+                @row[association.join_foreign_key]  = ActiveRecord::FixtureSet.identify(value, reflection_class.type_for_attribute(association.join_foreign_key).type)
+                @row[association.join_foreign_type] = type if association.polymorphic? && type
               end
             when :has_many
               if association.options[:through]
                 add_join_records_sidestepping_fixtures_file(association)
               end
             end
-          end
-        end
-
-        def extract_polymorphic_association_type_from_foreign_key_declaration(association, value)
-          # Support polymorphic belongs_to as "label (Type)"
-          if association.polymorphic? && value.sub!(/\s*\(([^\)]*)\)\s*$/, "")
-            @row[association.join_foreign_type] = $1
           end
         end
 
