@@ -3,28 +3,6 @@
 module ActiveRecord
   class FixtureSet
     class TableRow # :nodoc:
-      class HasManyThroughProxy # :nodoc:
-        def initialize(association)
-          @association = association
-        end
-
-        def primary_key_type
-          @association.klass.type_for_attribute(@association.klass.primary_key).type
-        end
-
-        def rhs_key
-          @association.foreign_key
-        end
-
-        def lhs_key
-          @association.through_reflection.foreign_key
-        end
-
-        def join_table
-          @association.through_reflection.table_name
-        end
-      end
-
       def initialize(fixture, table_rows:, model_metadata:, label:, now:)
         @table_rows = table_rows
         @model_metadata = model_metadata
@@ -118,11 +96,11 @@ module ActiveRecord
 
         def add_join_records_sidestepping_fixtures_file(association)
           if targets = @row.delete(association.name.to_s)
-            association = HasManyThroughProxy.new(association)
             targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
 
-            @table_rows.tables[association.join_table].concat \
-              targets.map { |target| { association.lhs_key => @row[model_metadata.primary_key_name], association.rhs_key => ActiveRecord::FixtureSet.identify(target, association.primary_key_type) } }
+            @table_rows.tables[association.through_reflection.table_name].concat \
+              targets.map { |target| { association.through_reflection.foreign_key => @row[model_metadata.primary_key_name],
+                  association.foreign_key => ActiveRecord::FixtureSet.identify(target, association.klass.type_for_attribute(association.klass.primary_key).type) } }
           end
         end
     end
