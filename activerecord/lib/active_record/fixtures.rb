@@ -645,11 +645,8 @@ module ActiveRecord
 
     private
       def model_class=(class_name)
-        if class_name.is_a?(Class) # TODO: Should be an AR::Base type class, or any?
-          @model_class = class_name
-        else
-          @model_class = class_name.safe_constantize if class_name
-        end
+        # TODO: Should be an AR::Base type class, or any?
+        @model_class = class_name.is_a?(Class) ? class_name : class_name&.safe_constantize
       end
 
       def ignored_fixtures=(base)
