@@ -29,11 +29,7 @@ module ActiveRecord
         end
 
         def reflection_class
-          @reflection_class ||= if @row.include?(model_metadata.inheritance_column_name)
-            @row[model_metadata.inheritance_column_name].constantize rescue @model_class
-          else
-            @model_class
-          end
+          @reflection_class ||= @row[model_metadata.inheritance_column_name]&.safe_constantize || @model_class
         end
 
         def fill_timestamps
