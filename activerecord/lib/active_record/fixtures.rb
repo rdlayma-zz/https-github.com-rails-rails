@@ -583,10 +583,11 @@ module ActiveRecord
       tables = Hash.new { |h,k| h[k] = [] }
       tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
 
-      metadata, timestamp = ModelMetadata.new(model_class), appropriate_column_timestamp
+      metadata = ModelMetadata.new(model_class)
 
       tables[table_name] = fixtures.map do |label, fixture|
-        TableRow.new(fixture.to_hash, model_metadata: metadata, tables: tables, label: label, timestamp: timestamp)
+        TableRow.new fixture.to_hash, model_metadata: metadata, tables: tables, label: label,
+          timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now
       end
       tables.transform_values { |rows| rows.map(&:to_hash) }
     end
@@ -599,10 +600,6 @@ module ActiveRecord
 
       def ignored_fixtures=(base)
         @ignored_fixtures = [ "DEFAULTS" ] | Array(base).compact
-      end
-
-      def appropriate_column_timestamp
-        config.default_timezone == :utc ? Time.now.utc : Time.now
       end
 
       # Loads the fixtures from the YAML file at +path+.
