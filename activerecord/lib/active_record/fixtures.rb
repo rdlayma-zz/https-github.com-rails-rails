@@ -542,21 +542,23 @@ module ActiveRecord
 
       private
         def insert(fixture_sets, connection) # :nodoc:
-          fixture_sets.group_by { |set| set.model_class&.connection || connection }.each do |conn, set|
+          fixture_sets.group_by { |set| set.model_class&.connection || connection }.each do |conn, sets|
             table_rows_for_connection = Hash.new { |h, k| h[k] = [] }
 
-            set.each do |fixture_set|
+            sets.each do |fixture_set|
               fixture_set.table_rows.each do |table, rows|
                 table_rows_for_connection[table].unshift(*rows)
               end
             end
 
             conn.insert_fixtures_set(table_rows_for_connection, table_rows_for_connection.keys)
+            reset_connection_after_insertion conn, sets
+          end
+        end
 
-            # Cap primary key sequences to max(pk).
-            if conn.respond_to?(:reset_pk_sequence!)
-              set.each { |fs| conn.reset_pk_sequence!(fs.table_name) }
-            end
+        def reset_connection_after_insertion(conn, sets)
+          if conn.respond_to?(:reset_pk_sequence!) # Cap primary key sequences to max(pk).
+            sets.each { |fixture| conn.reset_pk_sequence!(fixture.table_name) }
           end
         end
     end
