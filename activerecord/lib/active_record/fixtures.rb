@@ -573,22 +573,16 @@ module ActiveRecord
       end
 
       private
-        def read_and_insert(fixtures_directory, fixture_files, class_names, connection) # :nodoc:
-          fixtures_map = {}
-          fixture_sets = fixture_files.map do |fixture_set_name|
-            klass = class_names[fixture_set_name]
-            fixtures_map[fixture_set_name] = new( # ActiveRecord::FixtureSet.new
-              nil,
-              fixture_set_name,
-              klass,
-              ::File.join(fixtures_directory, fixture_set_name)
-            )
+        def read_and_insert(directory, fixture_files, class_names, connection) # :nodoc:
+          {}.tap do |fixtures_map|
+            fixture_sets = fixture_files.map do |fixture_set_name|
+              fixtures_map[fixture_set_name] = new(nil, fixture_set_name, class_names[fixture_set_name],
+                ::File.join(directory, fixture_set_name))
+            end
+            all_loaded_fixtures.update(fixtures_map)
+
+            insert(fixture_sets, connection)
           end
-          update_all_loaded_fixtures(fixtures_map)
-
-          insert(fixture_sets, connection)
-
-          fixtures_map
         end
 
         def insert(fixture_sets, connection) # :nodoc:
@@ -616,10 +610,6 @@ module ActiveRecord
               set.each { |fs| conn.reset_pk_sequence!(fs.table_name) }
             end
           end
-        end
-
-        def update_all_loaded_fixtures(fixtures_map) # :nodoc:
-          all_loaded_fixtures.update(fixtures_map)
         end
     end
 
