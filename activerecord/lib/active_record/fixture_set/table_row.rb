@@ -3,9 +3,9 @@
 module ActiveRecord
   class FixtureSet
     class TableRow # :nodoc:
-      def initialize(fixture, table_rows:, model_metadata:, label:, now:)
-        @table_rows = table_rows
+      def initialize(fixture, model_metadata:, tables:, label:, now:)
         @model_metadata = model_metadata
+        @tables = tables
         @label = label
         @now = now
         @row = fixture.to_hash
@@ -98,7 +98,7 @@ module ActiveRecord
           if targets = @row.delete(association.name.to_s)
             targets = targets.is_a?(Array) ? targets : targets.split(/\s*,\s*/)
 
-            @table_rows.tables[association.through_reflection.table_name].concat \
+            @tables[association.through_reflection.table_name].concat \
               targets.map { |target| { association.through_reflection.foreign_key => @row[model_metadata.primary_key_name],
                   association.foreign_key => ActiveRecord::FixtureSet.identify(target, association.klass.type_for_attribute(association.klass.primary_key).type) } }
           end

@@ -33,7 +33,7 @@ module ActiveRecord
           now = config.default_timezone == :utc ? Time.now.utc : Time.now
 
           @tables[table_name] = fixtures.map do |label, fixture|
-            TableRow.new(fixture, table_rows: self, model_metadata: model_metadata, label: label, now: now)
+            TableRow.new(fixture, model_metadata: model_metadata, tables: tables, label: label, now: now)
           end
         end
     end
