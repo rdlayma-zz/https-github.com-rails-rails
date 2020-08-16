@@ -34,29 +34,25 @@ module ActiveRecord
 
       private
         def rows
-          @rows ||= raw_rows.reject { |fixture_name, _| fixture_name == "_fixture" }
+          parse_rows
+          @rows
         end
 
         def config_row
-          @config_row ||= begin
-            row = raw_rows.find { |fixture_name, _| fixture_name == "_fixture" }
-            if row
-              row.last
-            else
-              { 'model_class': nil, 'ignore': nil }
-            end
-          end
+          parse_rows
+          @config_row
         end
 
-        def raw_rows
-          @raw_rows ||= Array read_data
-        rescue RuntimeError => error
-          raise Fixture::FormatError, error.message
+        def parse_rows
+          @rows = read_data
+          @config_row = @rows.delete("_fixture") || {}
         end
 
         def read_data
           ActiveSupport::ConfigurationFile.parse(@file, context: new_render_context)
             .tap { |data| validate!(data) if data }
+        rescue RuntimeError => error
+          raise Fixture::FormatError, error.message
         end
 
         def new_render_context
