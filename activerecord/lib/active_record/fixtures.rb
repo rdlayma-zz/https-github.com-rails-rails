@@ -474,9 +474,9 @@ module ActiveRecord
         @classifier  = classifier
       end
 
-      def [](fs_name)
-        @class_names.fetch(fs_name) do
-          @class_names[fs_name] = @classifier.call(fs_name).yield_self { |klass| active_record?(klass) ? klass : nil }
+      def [](set_name)
+        @class_names.fetch(set_name) do
+          @class_names[set_name] = @classifier.call(set_name).yield_self { |klass| active_record?(klass) ? klass : nil }
         end
       end
 
@@ -527,7 +527,7 @@ module ActiveRecord
         connection = block_given? ? block : -> { ActiveRecord::Base.connection }
         cache      = cache_for_connection(connection.call)
 
-        if (fixture_files_to_read = fixture_set_names.reject { |fs_name| cache[fs_name] }).any?
+        if (fixture_files_to_read = fixture_set_names.reject { |set_name| cache[set_name] }).any?
           cache.update read_and_insert(directory, fixture_files_to_read, class_names, connection)
         end
 
