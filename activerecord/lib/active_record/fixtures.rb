@@ -536,15 +536,10 @@ module ActiveRecord
 
       private
         def read_and_insert(directory, fixture_files, class_names, connection) # :nodoc:
-          {}.tap do |fixtures_map|
-            fixture_sets = fixture_files.map do |fixture_set_name|
-              fixtures_map[fixture_set_name] = new(nil, fixture_set_name, class_names[fixture_set_name],
-                ::File.join(directory, fixture_set_name))
-            end
-            all_loaded_fixtures.update(fixtures_map)
+          fixture_sets = fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
+          insert fixture_sets, connection
 
-            insert(fixture_sets, connection)
-          end
+          fixture_sets.index_by(&:name).tap { |map| all_loaded_fixtures.update(map) }
         end
 
         def insert(fixture_sets, connection) # :nodoc:
