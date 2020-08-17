@@ -468,24 +468,6 @@ module ActiveRecord
 
     cattr_accessor :all_loaded_fixtures, default: {}
 
-    class ClassCache
-      def initialize(class_names, &classifier)
-        @class_names = class_names.keep_if { |_, klass| active_record?(klass) }.stringify_keys
-        @classifier  = classifier
-      end
-
-      def [](set_name)
-        @class_names.fetch(set_name) do
-          @class_names[set_name] = @classifier.call(set_name).yield_self { |klass| active_record?(klass) ? klass : nil }
-        end
-      end
-
-      private
-        def active_record?(klass)
-          klass && klass < ActiveRecord::Base
-        end
-    end
-
     class << self
       def fixture_model_klass(set_name, config = ActiveRecord::Base) # :nodoc:
         set_name = set_name.singularize if config.pluralize_table_names
@@ -506,7 +488,7 @@ module ActiveRecord
 
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
         fixture_set_names = Array(fixture_set_names).map(&:to_s)
-        class_names = ClassCache.new(class_names) { |accessed_name| fixture_model_klass(accessed_name, config) }
+        class_names = build_class_names_cache(class_names, config)
 
         # FIXME: Apparently JK uses this.
         connection = block&.call || ActiveRecord::Base.connection
@@ -560,6 +542,18 @@ module ActiveRecord
           if conn.respond_to?(:reset_pk_sequence!) # Cap primary key sequences to max(pk).
             sets.each { |fixture| conn.reset_pk_sequence!(fixture.table_name) }
           end
+        end
+
+        def build_class_names_cache(class_names, config)
+          class_names.keep_if { |_, klass| active_record?(klass) }.stringify_keys.tap do |hsh|
+            hsh.default_proc = -> (hash, key) do
+              hash[key] = fixture_model_klass(key, config).yield_self { |klass| active_record?(klass) ? klass : nil }
+            end
+          end
+        end
+
+        def active_record?(klass)
+          klass && klass < ActiveRecord::Base
         end
     end
 
