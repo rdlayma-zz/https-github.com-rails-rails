@@ -597,10 +597,7 @@ module ActiveRecord
     end
 
     private
-      def model_class=(class_name)
-        # TODO: Should be an AR::Base type class, or any?
-        @model_class = class_name.is_a?(Class) ? class_name : class_name&.safe_constantize
-      end
+      attr_writer :model_class
 
       def ignored_fixtures=(base)
         @ignored_fixtures = [ "DEFAULTS" ] | Array(base).compact
@@ -613,7 +610,7 @@ module ActiveRecord
         files.each_with_object Hash.new do |file, fixtures|
           FixtureSet::File.new(file).tap do |fixture_file|
             fixture_file.configuration.tap do |config|
-              self.model_class ||= config[:model_class] if config[:model_class]
+              self.model_class ||= config[:model_class]&.safe_constantize if config[:model_class]
               self.ignored_fixtures ||= config[:ignore]
             end
 
