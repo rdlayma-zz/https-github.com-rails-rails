@@ -484,7 +484,7 @@ class FixturesTest < ActiveRecord::TestCase
     error = assert_raise(ActiveRecord::Fixture::FormatError) do
       ActiveRecord::FixtureSet.new(nil, "courses", Course, fixture_path)
     end
-    assert_equal "fixture is not a hash: #{fixture_path}.yml", error.to_s
+    assert_equal "Configuration file expected to contain either a Hash or an omap: #{fixture_path}.yml", error.to_s
   end
 
   def test_yaml_file_with_one_invalid_fixture
@@ -492,7 +492,7 @@ class FixturesTest < ActiveRecord::TestCase
     error = assert_raise(ActiveRecord::Fixture::FormatError) do
       ActiveRecord::FixtureSet.new(nil, "courses", Course, fixture_path)
     end
-    assert_equal "fixture key is not a hash: #{fixture_path}.yml, keys: [\"two\"]", error.to_s
+    assert_equal "Only Hash rows expected but [\"two\"] was not: #{fixture_path}.yml", error.to_s
   end
 
   def test_yaml_file_with_invalid_column

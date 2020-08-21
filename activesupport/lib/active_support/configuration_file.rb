@@ -18,12 +18,15 @@ module ActiveSupport
       new(content_path).parse(**options)
     end
 
-    def parse(context: nil, **options)
-      YAML.load(render(context), **options) || {}
+    def parse(context: nil, row_type: nil, **options)
+      (YAML.load(render(context), **options) || {}).tap do |data|
+        validate_tree data
+        validate_row_type data, row_type if row_type
+      end
     rescue Psych::SyntaxError => error
-      raise "YAML syntax error occurred while parsing #{@content_path}. " \
-            "Please note that YAML must be consistently indented using spaces. Tabs are not allowed. " \
-            "Error: #{error.message}"
+      raise FormatError, "YAML syntax error occurred while parsing #{@content_path}. " \
+        "Please note that YAML must be consistently indented using spaces. Tabs are not allowed. " \
+        "Error: #{error.message}"
     end
 
     private
@@ -41,6 +44,20 @@ module ActiveSupport
       def render(context)
         erb = ERB.new(@content).tap { |e| e.filename = @content_path }
         context ? erb.result(context) : erb.result
+      end
+
+      def validate_tree(data)
+        case data
+        when Hash, Psych::Omap
+        else
+          raise FormatError, "Configuration file expected to contain either a Hash or an omap: #{@content_path}"
+        end
+      end
+
+      def validate_row_type(data, row_type)
+        if (invalid_rows = data.reject { |_, row| row_type === row }).any?
+          raise FormatError, "Only #{row_type} rows expected but #{invalid_rows.keys.inspect} was not: #{@content_path}"
+        end
       end
   end
 end
