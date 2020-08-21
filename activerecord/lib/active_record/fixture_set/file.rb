@@ -8,21 +8,13 @@ module ActiveRecord
       attr_reader :rows, :configuration
 
       def initialize(file)
-        @file = file
-        parse_rows
+        @rows = parse_rows_from(file)
+        @configuration = (@rows.delete("_fixture") || {}).symbolize_keys
       end
 
       private
-        def parse_rows
-          unless defined?(@rows)
-            @rows = read_data
-            @configuration = (@rows.delete("_fixture") || {}).symbolize_keys
-          end
-        end
-
-        def read_data
-          ActiveSupport::ConfigurationFile.parse(@file, context: new_render_context)
-            .tap { |data| validate!(data) if data }
+        def parse_rows_from(file)
+          ActiveSupport::ConfigurationFile.parse(file, context: new_render_context).tap { |data| validate!(data) if data }
         rescue RuntimeError => error
           raise Fixture::FormatError, error.message
         end
