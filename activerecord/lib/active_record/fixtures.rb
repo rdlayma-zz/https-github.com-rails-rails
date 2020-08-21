@@ -610,7 +610,7 @@ module ActiveRecord
         files.each_with_object Hash.new do |file, fixtures|
           FixtureSet::File.new(file).tap do |fixture_file|
             fixture_file.configuration.tap do |config|
-              self.model_class ||= config[:model_class]&.safe_constantize if config[:model_class]
+              self.model_class ||= config[:model_class]&.safe_constantize
               self.ignored_fixtures ||= config[:ignore]
             end
 
