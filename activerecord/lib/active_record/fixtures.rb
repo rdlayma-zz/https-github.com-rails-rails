@@ -615,7 +615,7 @@ module ActiveRecord
             end
 
             fixtures.merge! \
-              fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(model_class, row) }
+              fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row) }
           end
         end
       end
@@ -631,11 +631,11 @@ module ActiveRecord
     class FixtureError < StandardError; end #:nodoc:
     class FormatError  < FixtureError;  end #:nodoc:
 
-    attr_reader :model_class, :data
+    attr_reader :data
     delegate :to_h, :[], :each, to: :data
 
-    def initialize(model_class, data)
-      @model_class, @data = model_class, data
+    def initialize(data)
+      @data = data
     end
   end
 end
