@@ -578,13 +578,13 @@ module ActiveRecord
 
       tables[table_name] = fixtures.map do |label, fixture|
         if model_class
-          TableRow.new fixture.to_hash, model_class: model_class, tables: tables, label: label,
+          TableRow.new fixture.to_h, model_class: model_class, tables: tables, label: label,
             timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now
         else
           fixture
         end
       end.compact
-      tables.transform_values { |rows| rows.map(&:to_hash) }
+      tables.transform_values { |rows| rows.map(&:to_h) }
     end
 
     private
@@ -609,7 +609,7 @@ module ActiveRecord
             end
 
             fixtures.merge! \
-              fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row, model_class) }
+              fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(model_class, row) }
           end
         end
       end
@@ -625,20 +625,17 @@ module ActiveRecord
     class FixtureError < StandardError; end #:nodoc:
     class FormatError  < FixtureError;  end #:nodoc:
 
-    attr_reader :model_class, :fixture
+    attr_reader :model_class, :data
+    delegate :to_h, :[], :each, to: :data
 
-    def initialize(fixture, model_class)
-      @fixture     = fixture
-      @model_class = model_class
+    def initialize(model_class, data)
+      @model_class, @data = model_class, data
     end
-    delegate :[], :each, to: :fixture
-
-    alias :to_hash :fixture
 
     def find
       raise FixtureClassNotFound, "No class attached to find." unless model_class
       model_class.unscoped do
-        model_class.find(fixture[model_class.primary_key])
+        model_class.find(data[model_class.primary_key])
       end
     end
   end

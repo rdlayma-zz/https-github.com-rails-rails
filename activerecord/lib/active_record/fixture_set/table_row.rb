@@ -12,7 +12,7 @@ module ActiveRecord
         fill_row_model_attributes
       end
 
-      def to_hash
+      def to_h
         @row
       end
 
