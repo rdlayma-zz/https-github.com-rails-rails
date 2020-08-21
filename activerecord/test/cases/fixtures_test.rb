@@ -445,7 +445,7 @@ class FixturesTest < ActiveRecord::TestCase
 
   def test_instantiation
     topics = create_fixtures("topics").first
-    assert_kind_of Topic, topics["first"].find
+    assert_kind_of Topic, topics.find("first")
   end
 
   def test_complete_instantiation
@@ -700,7 +700,7 @@ class FixturesWithoutInstantiationTest < ActiveRecord::TestCase
   def test_reloading_fixtures_through_accessor_methods
     topic = Struct.new(:title)
     assert_equal "The First Topic", topics(:first).title
-    assert_called(@loaded_fixtures["topics"]["first"], :find, returns: topic.new("Fresh Topic!")) do
+    assert_called(@loaded_fixtures["topics"], :find, returns: topic.new("Fresh Topic!")) do
       assert_equal "Fresh Topic!", topics(:first, true).title
     end
   end

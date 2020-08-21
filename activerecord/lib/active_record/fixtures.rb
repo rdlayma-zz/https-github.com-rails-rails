@@ -588,6 +588,14 @@ module ActiveRecord
       tables
     end
 
+    def find(label) # :nodoc:
+      if model_class
+        model_class.unscoped.find(fixtures[label][model_class.primary_key])
+      else
+        raise FixtureClassNotFound, "No class attached to find."
+      end
+    end
+
     private
       def model_class=(class_name)
         # TODO: Should be an AR::Base type class, or any?
@@ -631,14 +639,6 @@ module ActiveRecord
 
     def initialize(model_class, data)
       @model_class, @data = model_class, data
-    end
-
-    def find
-      if model_class
-        model_class.unscoped.find(data[model_class.primary_key])
-      else
-        raise FixtureClassNotFound, "No class attached to find." 
-      end
     end
   end
 end

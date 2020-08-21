@@ -73,7 +73,7 @@ module ActiveRecord
                 @fixture_cache[fs_name].delete(f_name) if force_reload
 
                 if @loaded_fixtures[fs_name][f_name]
-                  @fixture_cache[fs_name][f_name] ||= @loaded_fixtures[fs_name][f_name].find
+                  @fixture_cache[fs_name][f_name] ||= @loaded_fixtures[fs_name].find f_name
                 else
                   raise StandardError, "No fixture named '#{f_name}' found for fixture set '#{fs_name}'"
                 end
@@ -228,7 +228,7 @@ module ActiveRecord
 
       def instantiate_fixture_set(fixture_set)
         fixture_set.each do |fixture_name, fixture|
-          instance_variable_set "@#{fixture_name}", fixture.find
+          instance_variable_set "@#{fixture_name}", fixture_set.find(fixture_name)
         end
       rescue FixtureClassNotFound
         nil
