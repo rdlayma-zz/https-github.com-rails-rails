@@ -8,7 +8,8 @@ module ActiveRecord
       attr_reader :rows, :configuration
 
       def initialize(file)
-        @rows = parse_rows_from(file)
+        @file = file
+        @rows = parse_rows_from(@file)
         @configuration = (@rows.delete("_fixture") || {}).symbolize_keys
       end
 
