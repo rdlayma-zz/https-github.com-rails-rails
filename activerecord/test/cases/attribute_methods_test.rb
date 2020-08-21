@@ -265,7 +265,7 @@ class AttributeMethodsTest < ActiveRecord::TestCase
   end
 
   test "case-sensitive attributes hash" do
-    assert_equal @loaded_fixtures["computers"]["workstation"].to_hash, Computer.first.attributes
+    assert_equal @loaded_fixtures["computers"]["workstation"].to_h, Computer.first.attributes
   end
 
   test "attributes without primary key" do
