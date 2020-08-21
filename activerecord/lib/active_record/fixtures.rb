@@ -622,11 +622,8 @@ module ActiveRecord
   class Fixture #:nodoc:
     include Enumerable
 
-    class FixtureError < StandardError #:nodoc:
-    end
-
-    class FormatError < FixtureError #:nodoc:
-    end
+    class FixtureError < StandardError; end #:nodoc:
+    class FormatError  < FixtureError;  end #:nodoc:
 
     attr_reader :model_class, :fixture
 
