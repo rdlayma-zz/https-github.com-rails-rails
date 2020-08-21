@@ -634,9 +634,10 @@ module ActiveRecord
     end
 
     def find
-      raise FixtureClassNotFound, "No class attached to find." unless model_class
-      model_class.unscoped do
-        model_class.find(data[model_class.primary_key])
+      if model_class
+        model_class.unscoped.find(data[model_class.primary_key])
+      else
+        raise FixtureClassNotFound, "No class attached to find." 
       end
     end
   end
