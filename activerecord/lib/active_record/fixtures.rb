@@ -633,10 +633,6 @@ module ActiveRecord
     end
     delegate :[], :each, to: :fixture
 
-    def class_name
-      model_class.name if model_class
-    end
-
     alias :to_hash :fixture
 
     def find
