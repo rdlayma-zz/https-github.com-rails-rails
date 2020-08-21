@@ -578,13 +578,14 @@ module ActiveRecord
 
       tables[table_name] = fixtures.map do |label, fixture|
         if model_class
-          TableRow.new fixture.to_h, model_class: model_class, tables: tables, label: label,
-            timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now
+          TableRow.new(fixture.to_h, model_class: model_class, tables: tables, label: label,
+            timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now).to_h
         else
-          fixture
+          fixture.to_h
         end
-      end.compact
-      tables.transform_values { |rows| rows.map(&:to_h) }
+      end
+
+      tables
     end
 
     private
