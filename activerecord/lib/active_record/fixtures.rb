@@ -470,13 +470,27 @@ module ActiveRecord
     cattr_accessor :all_loaded_fixtures, default: {}
 
     class << self
+      class Configuration
+        def initialize(set_name, config)
+          @set_name, @config = set_name, config
+        end
+
+        def model_class
+          set_name = @config.pluralize_table_names ? @set_name.singularize : @set_name
+          set_name.camelize.safe_constantize
+        end
+
+        def table_name
+          "#{@config.table_name_prefix}#{@set_name.tr("/", "_")}#{@config.table_name_suffix}"
+        end
+      end
+
       def fixture_model_klass(set_name, config = ActiveRecord::Base) # :nodoc:
-        set_name = set_name.singularize if config.pluralize_table_names
-        set_name.camelize.safe_constantize
+        Configuration.new(set_name, config).model_class
       end
 
       def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
-        "#{config.table_name_prefix}#{set_name.tr("/", "_")}#{config.table_name_suffix}"
+        Configuration.new(set_name, config).table_name
       end
 
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
