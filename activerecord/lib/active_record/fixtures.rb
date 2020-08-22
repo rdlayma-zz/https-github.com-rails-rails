@@ -496,7 +496,7 @@ module ActiveRecord
 
         if (fixture_files = fixture_set_names - cache.keys).any?
           sets = fixture_files.map { |set_name| load(set_name, directory, model_class: class_names[set_name]) }
-          insert_sets_grouped_by_connection sets.group_by { |set| set.model_class&.connection || connection }
+          insert sets, connection
 
           sets.index_by(&:name).tap do |map|
             cache.update map
@@ -527,8 +527,8 @@ module ActiveRecord
       end
 
       private
-        def insert_sets_grouped_by_connection(grouped_sets) # :nodoc:
-          grouped_sets.each do |conn, sets|
+        def insert(sets, connection) # :nodoc:
+          sets.group_by { |set| set.model_class&.connection || connection }.each do |conn, sets|
             table_rows_for_connection = Hash.new { |h, k| h[k] = [] }
 
             sets.each do |fixture_set|
