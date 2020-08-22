@@ -7,9 +7,18 @@ module ActiveRecord
     class File # :nodoc:
       attr_reader :rows, :model_class
 
+      class CompositeFile
+        attr_reader :model_class
+
+        def initialize(files)
+          @model_class = files.map(&:model_class).compact.first
+        end
+      end
+
       class << self
         def load_from(directory)
-          loadable_paths_from(directory).map { |path| new(path) }
+          files = loadable_paths_from(directory).map { |path| new(path) }
+          [ CompositeFile.new(files), files ]
         end
 
         private

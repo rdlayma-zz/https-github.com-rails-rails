@@ -601,8 +601,8 @@ module ActiveRecord
       # If the file sets the +model_class+ and current instance value is not set,
       # it uses the file value.
       def read_fixture_files(path)
-        fixture_files = FixtureSet::File.load_from(path)
-        self.model_class ||= fixture_files.map(&:model_class).compact.first&.safe_constantize
+        file, fixture_files = FixtureSet::File.load_from(path)
+        self.model_class ||= file.model_class&.safe_constantize
 
         fixture_files.flat_map(&:rows).map { |(label, data)| ActiveRecord::Fixture.new(label, data) }.index_by(&:label)
       end
