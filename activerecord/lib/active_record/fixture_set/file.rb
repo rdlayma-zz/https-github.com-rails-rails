@@ -20,7 +20,7 @@ module ActiveRecord
 
       def initialize(file)
         @rows = parse_rows_from(file)
-        @configuration = (@rows.delete("_fixture") || {}).symbolize_keys
+        @configuration = @rows.delete("_fixture")&.symbolize_keys
       end
 
       private
