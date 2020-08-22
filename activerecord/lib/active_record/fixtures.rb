@@ -557,7 +557,7 @@ module ActiveRecord
         end
     end
 
-    attr_reader :table_name, :name, :fixtures, :model_class, :ignored_fixtures, :config
+    attr_reader :table_name, :name, :fixtures, :model_class, :config
 
     def initialize(_, name, class_name, path, config = ActiveRecord::Base)
       @name, @path, @config = name, path, config
@@ -571,8 +571,6 @@ module ActiveRecord
     # Returns a hash of rows to be inserted. The key is the table, the value is
     # a list of rows to insert to that table.
     def table_rows
-      fixtures.except!(*ignored_fixtures)
-
       tables = Hash.new { |h, k| h[k] = [] }
       tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
 
@@ -599,10 +597,6 @@ module ActiveRecord
     private
       attr_writer :model_class
 
-      def ignored_fixtures=(base)
-        @ignored_fixtures = [ "DEFAULTS" ] | Array(base).compact
-      end
-
       # Loads the fixtures from the YAML file at +path+.
       # If the file sets the +model_class+ and current instance value is not set,
       # it uses the file value.
@@ -613,8 +607,7 @@ module ActiveRecord
       end
 
       def insert_configuration(file)
-        self.model_class      ||= file.model_class&.safe_constantize
-        self.ignored_fixtures ||= file.ignored_fixtures
+        self.model_class ||= file.model_class&.safe_constantize
       end
   end
 
