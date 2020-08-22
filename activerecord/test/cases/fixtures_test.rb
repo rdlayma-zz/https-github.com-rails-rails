@@ -418,7 +418,7 @@ class FixturesTest < ActiveRecord::TestCase
     second_row = ActiveRecord::Base.connection.select_one("SELECT * FROM prefix_other_topics_suffix WHERE author_name = 'Mary'")
     assert_nil(second_row["author_email_address"])
 
-    assert_equal :prefix_other_topics_suffix, topics.table_name.to_sym
+    assert_equal :prefix_other_topics_suffix, ActiveRecord::FixtureSet.fixture_table_name(topics.name).to_sym
     # This assertion should preferably be the last in the list, because calling
     # other_topic_klass.table_name sets a class-level instance variable
     assert_equal :prefix_other_topics_suffix, other_topic_klass.table_name.to_sym
@@ -461,11 +461,11 @@ class FixturesTest < ActiveRecord::TestCase
   end
 
   def test_empty_yaml_fixture
-    assert_not_nil ActiveRecord::FixtureSet.new(nil, "accounts", Account, FIXTURES_ROOT + "/naked/yml/accounts")
+    assert_not_nil ActiveRecord::FixtureSet.load("accounts", FIXTURES_ROOT + "/naked/yml")
   end
 
   def test_empty_yaml_fixture_with_a_comment_in_it
-    assert_not_nil ActiveRecord::FixtureSet.new(nil, "companies", Company, FIXTURES_ROOT + "/naked/yml/companies")
+    assert_not_nil ActiveRecord::FixtureSet.load("companies", FIXTURES_ROOT + "/naked/yml")
   end
 
   def test_nonexistent_fixture_file
@@ -475,24 +475,24 @@ class FixturesTest < ActiveRecord::TestCase
     assert_empty Dir[nonexistent_fixture_path + "*"]
 
     assert_raise(Errno::ENOENT) do
-      ActiveRecord::FixtureSet.new(nil, "companies", Company, nonexistent_fixture_path)
+      ActiveRecord::FixtureSet.load("companies", nonexistent_fixture_path)
     end
   end
 
   def test_dirty_dirty_yaml_file
-    fixture_path = FIXTURES_ROOT + "/naked/yml/courses"
-    error = assert_raise(ActiveRecord::Fixture::FormatError) do
-      ActiveRecord::FixtureSet.new(nil, "courses", Course, fixture_path)
+    fixture_path = FIXTURES_ROOT + "/naked/yml"
+    error = assert_raise ActiveRecord::Fixture::FormatError do
+      ActiveRecord::FixtureSet.load("courses", fixture_path)
     end
-    assert_equal "Configuration file expected to contain either a Hash or an omap: #{fixture_path}.yml", error.to_s
+    assert_equal "Configuration file expected to contain either a Hash or an omap: #{fixture_path}/courses.yml", error.to_s
   end
 
   def test_yaml_file_with_one_invalid_fixture
-    fixture_path = FIXTURES_ROOT + "/naked/yml/courses_with_invalid_key"
-    error = assert_raise(ActiveRecord::Fixture::FormatError) do
-      ActiveRecord::FixtureSet.new(nil, "courses", Course, fixture_path)
+    fixture_path = FIXTURES_ROOT + "/naked/yml"
+    error = assert_raise ActiveRecord::Fixture::FormatError  do
+      ActiveRecord::FixtureSet.load("courses_with_invalid_key", fixture_path, model_class: Course)
     end
-    assert_equal "Only Hash rows expected but [\"two\"] was not: #{fixture_path}.yml", error.to_s
+    assert_equal "Only Hash rows expected but [\"two\"] was not: #{fixture_path}/courses_with_invalid_key.yml", error.to_s
   end
 
   def test_yaml_file_with_invalid_column
@@ -509,8 +509,7 @@ class FixturesTest < ActiveRecord::TestCase
 
   def test_omap_fixtures
     assert_nothing_raised do
-      fixtures = ActiveRecord::FixtureSet.new(nil, "categories", Category, FIXTURES_ROOT + "/categories_ordered")
-
+      fixtures = ActiveRecord::FixtureSet.load("categories_ordered", FIXTURES_ROOT, model_class: Category)
       fixtures.each.with_index do |(name, fixture), i|
         assert_equal "fixture_no_#{i}", name
         assert_equal "Category #{i}", fixture["name"]
@@ -562,60 +561,49 @@ class FixturesTest < ActiveRecord::TestCase
 end
 
 class HasManyThroughFixture < ActiveRecord::TestCase
-  def make_model(name)
-    Class.new(ActiveRecord::Base) { define_singleton_method(:name) { name } }
-  end
-
   def test_has_many_through_with_default_table_name
-    pt = make_model "ParrotTreasure"
-    parrot = make_model "Parrot"
-    treasure = make_model "Treasure"
+    parrot_treasure, parrot, treasure = make_model("ParrotTreasure"), make_model("Parrot"), make_model("Treasure")
 
-    pt.table_name = "parrots_treasures"
-    pt.belongs_to :parrot, anonymous_class: parrot
-    pt.belongs_to :treasure, anonymous_class: treasure
+    parrot_treasure.table_name = "parrots_treasures"
+    parrot_treasure.belongs_to :parrot,   anonymous_class: parrot
+    parrot_treasure.belongs_to :treasure, anonymous_class: treasure
 
-    parrot.has_many :parrot_treasures, anonymous_class: pt
+    parrot.has_many :parrot_treasures, anonymous_class: parrot_treasure
     parrot.has_many :treasures, through: :parrot_treasures
 
-    parrots = File.join FIXTURES_ROOT, "parrots"
-
-    fs = ActiveRecord::FixtureSet.new(nil, "parrots", parrot, parrots)
-    rows = fs.table_rows
-    assert_equal load_has_and_belongs_to_many["parrots_treasures"], rows["parrots_treasures"]
+    assert_equal load_has_and_belongs_to_many["parrots_treasures"], parrot_rows(parrot)["parrots_treasures"]
   end
 
   def test_has_many_through_with_renamed_table
-    pt = make_model "ParrotTreasure"
-    parrot = make_model "Parrot"
-    treasure = make_model "Treasure"
+    parrot_treasure, parrot, treasure = make_model("ParrotTreasure"), make_model("Parrot"), make_model("Treasure")
 
-    pt.belongs_to :parrot, anonymous_class: parrot
-    pt.belongs_to :treasure, anonymous_class: treasure
+    parrot_treasure.belongs_to :parrot,   anonymous_class: parrot
+    parrot_treasure.belongs_to :treasure, anonymous_class: treasure
 
-    parrot.has_many :parrot_treasures, anonymous_class: pt
+    parrot.has_many :parrot_treasures, anonymous_class: parrot_treasure
     parrot.has_many :treasures, through: :parrot_treasures
 
-    parrots = File.join FIXTURES_ROOT, "parrots"
-
-    fs = ActiveRecord::FixtureSet.new(nil, "parrots", parrot, parrots)
-    rows = fs.table_rows
-    assert_equal load_has_and_belongs_to_many["parrots_treasures"], rows["parrot_treasures"]
+    assert_equal load_has_and_belongs_to_many["parrots_treasures"], parrot_rows(parrot)["parrot_treasures"]
   end
 
   def test_has_and_belongs_to_many_order
     assert_equal ["parrots", "parrots_treasures"], load_has_and_belongs_to_many.keys
   end
 
-  def load_has_and_belongs_to_many
-    parrot = make_model "Parrot"
-    parrot.has_and_belongs_to_many :treasures
+  private
+    def make_model(name)
+      Class.new(ActiveRecord::Base) { define_singleton_method(:name) { name } }
+    end
 
-    parrots = File.join FIXTURES_ROOT, "parrots"
+    def load_has_and_belongs_to_many
+      parrot = make_model "Parrot"
+      parrot.has_and_belongs_to_many :treasures
+      parrot_rows parrot
+    end
 
-    fs = ActiveRecord::FixtureSet.new(nil, "parrots", parrot, parrots)
-    fs.table_rows
-  end
+    def parrot_rows(parrot)
+      ActiveRecord::FixtureSet.load("parrots", FIXTURES_ROOT, model_class: parrot).table_rows
+    end
 end
 
 if Account.connection.respond_to?(:reset_pk_sequence!)
@@ -1059,7 +1047,7 @@ class FasterFixturesTest < ActiveRecord::TestCase
   def load_extra_fixture(name)
     fixture = create_fixtures(name).first
     assert fixture.is_a?(ActiveRecord::FixtureSet)
-    @loaded_fixtures[fixture.table_name] = fixture
+    @loaded_fixtures[name] = fixture
   end
 
   def test_cache

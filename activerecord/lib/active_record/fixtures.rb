@@ -475,7 +475,7 @@ module ActiveRecord
       end
 
       def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
-        :"#{config.table_name_prefix}#{set_name.tr("/", "_")}#{config.table_name_suffix}"
+        "#{config.table_name_prefix}#{set_name.tr("/", "_")}#{config.table_name_suffix}"
       end
 
       def reset_cache
@@ -495,7 +495,7 @@ module ActiveRecord
         cache      = cache_for_connection(connection)
 
         if (fixture_files = fixture_set_names - cache.keys).any?
-          sets = fixture_files.map { |set_name| new(nil, set_name, class_names[set_name], ::File.join(directory, set_name)) }
+          sets = fixture_files.map { |set_name| load(set_name, directory, model_class: class_names[set_name]) }
           insert_sets_grouped_by_connection sets.group_by { |set| set.model_class&.connection || connection }
 
           sets.index_by(&:name).tap do |map|
@@ -505,6 +505,10 @@ module ActiveRecord
         end
 
         cache.values_at(*fixture_set_names)
+      end
+
+      def load(name, directory, model_class: nil) # :nodoc:
+        new(nil, name, model_class, ::File.join(directory, name))
       end
 
       # Returns a consistent, platform-independent identifier for +label+.
