@@ -574,9 +574,9 @@ module ActiveRecord
       tables = Hash.new { |h, k| h[k] = [] }
       tables[table_name] = nil # Order dependence: ensure this table is loaded before any HABTM associations
 
-      tables[table_name] = fixtures.map do |label, fixture|
+      tables[table_name] = fixtures.map do |_, fixture|
         if model_class
-          TableRow.new(fixture.to_h, model_class: model_class, tables: tables, label: label,
+          TableRow.new(fixture, model_class: model_class, tables: tables,
             timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now).to_h
         else
           fixture.to_h

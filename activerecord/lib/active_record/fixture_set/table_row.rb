@@ -3,11 +3,11 @@
 module ActiveRecord
   class FixtureSet
     class TableRow # :nodoc:
-      def initialize(row, model_class:, tables:, label:, timestamp:)
-        @row = row
+      def initialize(fixture, model_class:, tables:, timestamp:)
+        @fixture = fixture
+        @row     = fixture.to_h
         @model_class = model_class
         @tables = tables
-        @label = label
         @timestamp = timestamp
         fill_row_model_attributes
       end
@@ -37,13 +37,13 @@ module ActiveRecord
 
         def interpolate_label
           @row.transform_values! do |value|
-            value.respond_to?(:gsub) ? value.gsub("$LABEL", @label.to_s) : value
+            value.respond_to?(:gsub) ? value.gsub("$LABEL", @fixture.label.to_s) : value
           end
         end
 
         def generate_primary_key
           if @model_class.column_names.include?(@model_class.primary_key)
-            @row[@model_class.primary_key] ||= value_from_identification(@label, @model_class, @model_class.primary_key)
+            @row[@model_class.primary_key] ||= value_from_identification(@fixture.label, @model_class, @model_class.primary_key)
           end
         end
 
