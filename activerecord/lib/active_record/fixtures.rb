@@ -604,7 +604,7 @@ module ActiveRecord
         fixture_files = FixtureSet::File.load_from(path)
         self.model_class ||= fixture_files.map(&:model_class).compact.first&.safe_constantize
 
-        fixture_files.map(&:rows).inject(Hash.new, &:merge!).transform_values { |row| ActiveRecord::Fixture.new(row) }
+        fixture_files.map(&:rows).inject(Hash.new, &:merge!).to_h { |label, row| [ label, ActiveRecord::Fixture.new(label, row) ] }
       end
   end
 
@@ -614,11 +614,11 @@ module ActiveRecord
     class FixtureError < StandardError; end #:nodoc:
     class FormatError  < FixtureError;  end #:nodoc:
 
-    attr_reader :data
+    attr_reader :label, :data
     delegate :to_h, :[], :each, to: :data
 
-    def initialize(data)
-      @data = data
+    def initialize(label, data)
+      @label, @data = label, data
     end
   end
 end
