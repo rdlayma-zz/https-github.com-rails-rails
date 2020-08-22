@@ -84,7 +84,7 @@ module ActiveRecord
       end
 
       def test_extracts_model_class_from_config_row
-        assert_equal "Post", read_fixture(:other_posts).configuration[:model_class]
+        assert_equal "Post", read_fixture(:other_posts).model_class
       end
 
       private

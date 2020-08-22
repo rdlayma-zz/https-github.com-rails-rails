@@ -608,14 +608,13 @@ module ActiveRecord
       # it uses the file value.
       def read_fixture_files(path)
         fixture_files = FixtureSet::File.load_from(path)
-        fixture_files.each do |fixture_file|
-          fixture_file.configuration.tap do |config|
-            self.model_class ||= config[:model_class]&.safe_constantize
-            self.ignored_fixtures ||= config[:ignore]
-          end
-        end
-
+        fixture_files.each { |file| insert_configuration file }
         fixture_files.map(&:rows).inject(Hash.new, &:merge!).transform_values { |row| ActiveRecord::Fixture.new(row) }
+      end
+
+      def insert_configuration(file)
+        self.model_class      ||= file.model_class&.safe_constantize
+        self.ignored_fixtures ||= file.ignored_fixtures
       end
   end
 
