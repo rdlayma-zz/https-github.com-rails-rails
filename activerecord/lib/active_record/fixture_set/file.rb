@@ -5,8 +5,7 @@ require "active_support/configuration_file"
 module ActiveRecord
   class FixtureSet
     class File # :nodoc:
-      attr_reader :rows
-      attr_reader :model_class, :ignored_fixtures
+      attr_reader :rows, :model_class
 
       class << self
         def load_from(directory)
@@ -20,9 +19,9 @@ module ActiveRecord
       end
 
       def initialize(file)
-        @rows = parse_rows_from(file)
-        @model_class, @ignored_fixtures = @rows.delete("_fixture")&.values_at("model_class", "ignore")
-        @rows.except! "DEFAULTS", *@ignored_fixtures
+        rows = parse_rows_from(file)
+        @model_class, ignored_fixtures = rows.delete("_fixture")&.values_at("model_class", "ignore")
+        @rows = rows.except "DEFAULTS", *ignored_fixtures
       end
 
       private
