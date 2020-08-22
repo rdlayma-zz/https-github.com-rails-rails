@@ -405,7 +405,7 @@ class FixturesTest < ActiveRecord::TestCase
       end
     end
 
-    topics = [create_fixtures("other_topics")].flatten.first
+    topics = create_fixtures("other_topics").first
 
     # This checks for a caching problem which causes a bug in the fixtures
     # class-level configuration helper.
@@ -418,7 +418,6 @@ class FixturesTest < ActiveRecord::TestCase
     second_row = ActiveRecord::Base.connection.select_one("SELECT * FROM prefix_other_topics_suffix WHERE author_name = 'Mary'")
     assert_nil(second_row["author_email_address"])
 
-    assert_equal :prefix_other_topics_suffix, ActiveRecord::FixtureSet::Configuration.new(topics.name, ActiveRecord::Base).table_name.to_sym
     # This assertion should preferably be the last in the list, because calling
     # other_topic_klass.table_name sets a class-level instance variable
     assert_equal :prefix_other_topics_suffix, other_topic_klass.table_name.to_sym
