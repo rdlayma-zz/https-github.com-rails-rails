@@ -604,7 +604,7 @@ module ActiveRecord
         file, fixture_files = FixtureSet::File.load_from(path)
         self.model_class ||= file.model_class&.safe_constantize
 
-        fixture_files.flat_map(&:rows).map { |(label, data)| ActiveRecord::Fixture.new(label, data) }.index_by(&:label)
+        file.rows.map { |(label, data)| ActiveRecord::Fixture.new(label, data) }.index_by(&:label)
       end
   end
 

@@ -8,10 +8,11 @@ module ActiveRecord
       attr_reader :rows, :model_class
 
       class CompositeFile
-        attr_reader :model_class
+        attr_reader :model_class, :rows
 
         def initialize(files)
           @model_class = files.map(&:model_class).compact.first
+          @rows = files.flat_map(&:rows)
         end
       end
 
