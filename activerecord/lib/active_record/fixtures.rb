@@ -469,28 +469,24 @@ module ActiveRecord
 
     cattr_accessor :all_loaded_fixtures, default: {}
 
-    class << self
-      class Configuration
-        def initialize(set_name, config)
-          @set_name, @config = set_name, config
-        end
-
-        def model_class
-          set_name = @config.pluralize_table_names ? @set_name.singularize : @set_name
-          set_name.camelize.safe_constantize
-        end
-
-        def table_name
-          "#{@config.table_name_prefix}#{@set_name.tr("/", "_")}#{@config.table_name_suffix}"
-        end
+    class Configuration
+      def initialize(set_name, config)
+        @set_name, @config = set_name, config
       end
 
+      def model_class
+        set_name = @config.pluralize_table_names ? @set_name.singularize : @set_name
+        set_name.camelize.safe_constantize
+      end
+
+      def table_name
+        "#{@config.table_name_prefix}#{@set_name.tr("/", "_")}#{@config.table_name_suffix}"
+      end
+    end
+
+    class << self
       def fixture_model_klass(set_name, config = ActiveRecord::Base) # :nodoc:
         Configuration.new(set_name, config).model_class
-      end
-
-      def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
-        Configuration.new(set_name, config).table_name
       end
 
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
@@ -565,7 +561,7 @@ module ActiveRecord
       @name, self.model_class, @config = name, class_name, config
 
       @fixtures   = read_fixture_files path
-      @table_name = model_class&.table_name || self.class.fixture_table_name(name, config)
+      @table_name = model_class&.table_name || Configuration.new(name, config).table_name
     end
     delegate :[], :[]=, :each, :size, to: :fixtures
 
