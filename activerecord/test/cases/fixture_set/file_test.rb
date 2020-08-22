@@ -80,7 +80,7 @@ module ActiveRecord
       end
 
       def test_removes_fixture_config_row
-        assert_equal [ "second_welcome" ], read_fixture(:other_posts).rows.map(&:first)
+        assert_equal [ "second_welcome" ], read_fixture(:other_posts).rows.keys
       end
 
       def test_extracts_model_class_from_config_row
