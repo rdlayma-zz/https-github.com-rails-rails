@@ -609,7 +609,7 @@ module ActiveRecord
       def read_fixture_files(path)
         fixture_files = FixtureSet::File.load_from(path)
         fixture_files.each do |fixture_file|
-          fixture_file.configuration&.tap do |config|
+          fixture_file.configuration.tap do |config|
             self.model_class ||= config[:model_class]&.safe_constantize
             self.ignored_fixtures ||= config[:ignore]
           end
