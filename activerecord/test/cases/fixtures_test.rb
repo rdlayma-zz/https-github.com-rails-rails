@@ -1254,31 +1254,19 @@ end
 class CustomNameForFixtureOrModelTest < ActiveRecord::TestCase
   ActiveRecord::FixtureSet.reset_cache
 
-  set_fixture_class :randomly_named_a9 =>
-                        ClassNameThatDoesNotFollowCONVENTIONS,
-                    :'admin/randomly_named_a9' =>
-                        Admin::ClassNameThatDoesNotFollowCONVENTIONS1,
-                    "admin/randomly_named_b0"  =>
-                        Admin::ClassNameThatDoesNotFollowCONVENTIONS2
+  set_fixture_class randomly_named_a9: ClassNameThatDoesNotFollowCONVENTIONS,
+    'admin/randomly_named_a9': Admin::ClassNameThatDoesNotFollowCONVENTIONS1,
+    "admin/randomly_named_b0" => Admin::ClassNameThatDoesNotFollowCONVENTIONS2
 
-  fixtures :randomly_named_a9, "admin/randomly_named_a9",
-           :'admin/randomly_named_b0'
+  fixtures :randomly_named_a9, "admin/randomly_named_a9", :'admin/randomly_named_b0'
 
   def test_named_accessor_for_randomly_named_fixture_and_class
-    assert_kind_of ClassNameThatDoesNotFollowCONVENTIONS,
-                   randomly_named_a9(:first_instance)
+    assert_kind_of ClassNameThatDoesNotFollowCONVENTIONS, randomly_named_a9(:first_instance)
   end
 
   def test_named_accessor_for_randomly_named_namespaced_fixture_and_class
-    assert_kind_of Admin::ClassNameThatDoesNotFollowCONVENTIONS1,
-                   admin_randomly_named_a9(:first_instance)
-    assert_kind_of Admin::ClassNameThatDoesNotFollowCONVENTIONS2,
-                   admin_randomly_named_b0(:second_instance)
-  end
-
-  def test_table_name_is_defined_in_the_model
-    assert_equal "randomly_named_table2", ActiveRecord::FixtureSet.all_loaded_fixtures["admin/randomly_named_a9"].table_name
-    assert_equal "randomly_named_table2", Admin::ClassNameThatDoesNotFollowCONVENTIONS1.table_name
+    assert_kind_of Admin::ClassNameThatDoesNotFollowCONVENTIONS1, admin_randomly_named_a9(:first_instance)
+    assert_kind_of Admin::ClassNameThatDoesNotFollowCONVENTIONS2, admin_randomly_named_b0(:second_instance)
   end
 end
 
