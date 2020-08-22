@@ -464,7 +464,28 @@ module ActiveRecord
 
     MAX_ID = 2**30 - 1
 
-    @@all_cached_fixtures = Hash.new { |h, k| h[k] = {} }
+    class SetCache < DelegateClass(Hash) # :nodoc:
+      def initialize
+        @cache = {}
+        super @cache
+      end
+
+      def fetch_multi(set_names, &block)
+        Array(set_names).map(&:to_s).yield_self do |set_names|
+          insert_missing_set_names(set_names, &block)
+          @cache.values_at(*set_names)
+        end
+      end
+
+      private
+        def insert_missing_set_names(set_names)
+          if (missing_set_names = set_names - @cache.keys).any?
+            @cache.merge! yield(missing_set_names).index_by(&:name)
+          end
+        end
+    end
+
+    @@all_cached_fixtures = Hash.new { |h, k| h[k] = SetCache.new }
 
     cattr_accessor :all_loaded_fixtures, default: {}
 
@@ -487,24 +508,15 @@ module ActiveRecord
       end
 
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
-        fixture_set_names = Array(fixture_set_names).map(&:to_s)
+        # FIXME: Apparently JK uses this.
+        connection  = block&.call || ActiveRecord::Base.connection
         class_names = build_class_names_cache(class_names, config)
 
-        # FIXME: Apparently JK uses this.
-        connection = block&.call || ActiveRecord::Base.connection
-        cache      = cache_for_connection(connection)
-
-        if (fixture_files = fixture_set_names - cache.keys).any?
-          sets = fixture_files.map { |set_name| load(set_name, directory, model_class: class_names[set_name]) }
-          insert sets, connection
-
-          sets.index_by(&:name).tap do |map|
-            cache.update map
-            all_loaded_fixtures.update map
+        cache_for_connection(connection).fetch_multi fixture_set_names do |set_names|
+          set_names.map { |name| load(name, directory, model_class: class_names[name]) }.tap do |sets|
+            insert sets, connection
           end
         end
-
-        cache.values_at(*fixture_set_names)
       end
 
       def load(name, directory, model_class: nil) # :nodoc:
