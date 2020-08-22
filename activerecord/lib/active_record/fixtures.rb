@@ -485,10 +485,6 @@ module ActiveRecord
     end
 
     class << self
-      def fixture_model_klass(set_name, config = ActiveRecord::Base) # :nodoc:
-        Configuration.new(set_name, config).model_class
-      end
-
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
         # FIXME: Apparently JK uses this.
         connection  = block&.call || ActiveRecord::Base.connection
@@ -544,8 +540,8 @@ module ActiveRecord
 
         def build_class_names_cache(class_names, config)
           class_names.keep_if { |_, klass| active_record?(klass) }.stringify_keys.tap do |hsh|
-            hsh.default_proc = -> (hash, key) do
-              hash[key] = fixture_model_klass(key, config).yield_self { |klass| active_record?(klass) ? klass : nil }
+            hsh.default_proc = -> (hash, set_name) do
+              hash[set_name] = Configuration.new(set_name, config).model_class.yield_self { |klass| active_record?(klass) ? klass : nil }
             end
           end
         end
