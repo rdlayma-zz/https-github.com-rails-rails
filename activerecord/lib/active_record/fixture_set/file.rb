@@ -8,13 +8,13 @@ module ActiveRecord
       attr_reader :rows, :model_class
 
       class << self
-        def load_composite_from(directory)
-          new loadable_paths_from(directory)
+        def load_composite_from(path)
+          new loadable_paths_from(path)
         end
 
         private
-          def loadable_paths_from(directory)
-            [ "#{directory}.yml" ] + Dir["#{directory}/{*,**}/*.yml"]
+          def loadable_paths_from(path)
+            [ "#{path}.yml" ] + Dir["#{path}/{*,**}/*.yml"]
           end
       end
 
