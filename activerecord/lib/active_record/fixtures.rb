@@ -540,7 +540,7 @@ module ActiveRecord
 
         def reset_connection_after_insertion(conn, sets)
           if conn.respond_to?(:reset_pk_sequence!) # Cap primary key sequences to max(pk).
-            sets.each { |fixture| conn.reset_pk_sequence!(fixture.table_name) }
+            sets.each { |set| conn.reset_pk_sequence!(set.table_name) }
           end
         end
 
