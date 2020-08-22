@@ -10,22 +10,24 @@ module ActiveRecord
       class CompositeFile
         attr_reader :model_class, :rows
 
-        def initialize(files)
-          @model_class = files.map(&:model_class).compact.first
-          @rows = files.flat_map(&:rows)
-        end
-      end
+        def initialize(directory)
+          @rows = []
 
-      class << self
-        def load_composite_from(directory)
-          CompositeFile.new \
-            loadable_paths_from(directory).map { |path| new(path) }
+          loadable_paths_from(directory).each do |path|
+            file = File.new(path)
+            @model_class ||= file.model_class
+            @rows.concat file.rows
+          end
         end
 
         private
           def loadable_paths_from(directory)
             Dir["#{directory}/{**,*}/*.yml"].select { |f| ::File.file?(f) } | [ "#{directory}.yml" ]
           end
+      end
+
+      def self.load_composite_from(directory)
+        CompositeFile.new directory
       end
 
       def initialize(file)
