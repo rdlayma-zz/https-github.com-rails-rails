@@ -615,9 +615,7 @@ module ActiveRecord
           end
         end
 
-        fixture_files.each_with_object Hash.new do |fixture_file, fixtures|
-          fixtures.merge! fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row) }
-        end
+        fixture_files.map(&:rows).inject(Hash.new, &:merge!).transform_values { |row| ActiveRecord::Fixture.new(row) }
       end
   end
 
