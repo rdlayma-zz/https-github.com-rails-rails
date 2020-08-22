@@ -17,9 +17,9 @@ module ActiveRecord
       end
 
       class << self
-        def load_from(directory)
-          files = loadable_paths_from(directory).map { |path| new(path) }
-          [ CompositeFile.new(files), files ]
+        def load_composite_from(directory)
+          CompositeFile.new \
+            loadable_paths_from(directory).map { |path| new(path) }
         end
 
         private
