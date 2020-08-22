@@ -14,7 +14,7 @@ module ActiveRecord
 
         private
           def loadable_paths_from(directory)
-            Dir["#{directory}/{**,*}/*.yml"].select { |f| ::File.file?(f) } | [ "#{directory}.yml" ]
+            Dir["#{directory}/{**,*}/*.yml"] | [ "#{directory}.yml" ]
           end
       end
 
