@@ -576,8 +576,7 @@ module ActiveRecord
 
       tables[table_name] = fixtures.map do |_, fixture|
         if model_class
-          TableRow.new(fixture, model_class: model_class, tables: tables,
-            timestamp: config.default_timezone == :utc ? Time.now.utc : Time.now).to_h
+          TableRow.new(fixture, model_class: model_class, tables: tables, timestamp: new_timestamp).to_h
         else
           fixture.to_h
         end
@@ -605,6 +604,10 @@ module ActiveRecord
         self.model_class ||= file.model_class&.safe_constantize
 
         file.rows.map { |(label, data)| ActiveRecord::Fixture.new(label, data) }.index_by(&:label)
+      end
+
+      def new_timestamp
+        config.default_timezone == :utc ? Time.now.utc : Time.now
       end
   end
 
