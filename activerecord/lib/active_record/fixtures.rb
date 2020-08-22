@@ -607,17 +607,16 @@ module ActiveRecord
       # If the file sets the +model_class+ and current instance value is not set,
       # it uses the file value.
       def read_fixture_files(path)
-        files = FixtureSet::File.loadable_paths_from(path)
-        files.each_with_object Hash.new do |file, fixtures|
-          FixtureSet::File.new(file).tap do |fixture_file|
-            fixture_file.configuration.tap do |config|
-              self.model_class ||= config[:model_class]&.safe_constantize
-              self.ignored_fixtures ||= config[:ignore]
-            end
-
-            fixtures.merge! \
-              fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row) }
+        fixture_files = FixtureSet::File.load_from(path)
+        fixture_files.each do |fixture_file|
+          fixture_file.configuration.tap do |config|
+            self.model_class ||= config[:model_class]&.safe_constantize
+            self.ignored_fixtures ||= config[:ignore]
           end
+        end
+
+        fixture_files.each_with_object Hash.new do |fixture_file, fixtures|
+          fixtures.merge! fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row) }
         end
       end
   end

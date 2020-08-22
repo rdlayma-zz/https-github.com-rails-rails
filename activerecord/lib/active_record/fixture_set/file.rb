@@ -7,8 +7,15 @@ module ActiveRecord
     class File # :nodoc:
       attr_reader :rows, :configuration
 
-      def self.loadable_paths_from(directory)
-        Dir["#{directory}/{**,*}/*.yml"].select { |f| ::File.file?(f) } | [ "#{directory}.yml" ]
+      class << self
+        def load_from(directory)
+          loadable_paths_from(directory).map { |path| new(path) }
+        end
+
+        private
+          def loadable_paths_from(directory)
+            Dir["#{directory}/{**,*}/*.yml"].select { |f| ::File.file?(f) } | [ "#{directory}.yml" ]
+          end
       end
 
       def initialize(file)
