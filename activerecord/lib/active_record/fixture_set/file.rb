@@ -7,6 +7,10 @@ module ActiveRecord
     class File # :nodoc:
       attr_reader :rows, :configuration
 
+      def self.loadable_paths_from(directory)
+        Dir["#{directory}/{**,*}/*.yml"].select { |f| ::File.file?(f) } | [ "#{directory}.yml" ]
+      end
+
       def initialize(file)
         @rows = parse_rows_from(file)
         @configuration = (@rows.delete("_fixture") || {}).symbolize_keys

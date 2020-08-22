@@ -563,7 +563,7 @@ module ActiveRecord
       @name, @path, @config = name, path, config
       self.model_class = class_name
 
-      @fixtures   = read_fixture_files fixture_files
+      @fixtures   = read_fixture_files path
       @table_name = model_class&.table_name || self.class.fixture_table_name(name, config)
     end
     delegate :[], :[]=, :each, :size, to: :fixtures
@@ -606,7 +606,8 @@ module ActiveRecord
       # Loads the fixtures from the YAML file at +path+.
       # If the file sets the +model_class+ and current instance value is not set,
       # it uses the file value.
-      def read_fixture_files(files)
+      def read_fixture_files(path)
+        files = FixtureSet::File.loadable_paths_from(path)
         files.each_with_object Hash.new do |file, fixtures|
           FixtureSet::File.new(file).tap do |fixture_file|
             fixture_file.configuration.tap do |config|
@@ -618,10 +619,6 @@ module ActiveRecord
               fixture_file.rows.transform_values { |row| ActiveRecord::Fixture.new(row) }
           end
         end
-      end
-
-      def fixture_files
-        Dir["#{@path}/{**,*}/*.yml"].select { |f| ::File.file?(f) } | [ "#{@path}.yml" ]
       end
   end
 
