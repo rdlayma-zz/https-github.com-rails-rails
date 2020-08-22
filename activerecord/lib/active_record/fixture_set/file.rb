@@ -21,7 +21,7 @@ module ActiveRecord
       def initialize(file)
         rows = parse_rows_from(file)
         @model_class, ignored_fixtures = rows.delete("_fixture")&.values_at("model_class", "ignore")
-        @rows = rows.except! "DEFAULTS", *ignored_fixtures
+        @rows = rows.except!("DEFAULTS", *ignored_fixtures).to_a
       end
 
       private

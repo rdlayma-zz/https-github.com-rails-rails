@@ -604,7 +604,7 @@ module ActiveRecord
         fixture_files = FixtureSet::File.load_from(path)
         self.model_class ||= fixture_files.map(&:model_class).compact.first&.safe_constantize
 
-        fixture_files.map(&:rows).inject(Hash.new, &:merge!).to_h { |label, row| [ label, ActiveRecord::Fixture.new(label, row) ] }
+        fixture_files.flat_map(&:rows).map { |(label, data)| ActiveRecord::Fixture.new(label, data) }.index_by(&:label)
       end
   end
 
