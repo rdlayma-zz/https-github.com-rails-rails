@@ -560,7 +560,7 @@ module ActiveRecord
     attr_reader :table_name, :name, :fixtures, :model_class, :config
 
     def initialize(_, name, class_name, path, config = ActiveRecord::Base)
-      @name, @path, @config = name, path, config
+      @name, @config = name, config
       self.model_class = class_name
 
       @fixtures   = read_fixture_files path
