@@ -602,12 +602,9 @@ module ActiveRecord
       # it uses the file value.
       def read_fixture_files(path)
         fixture_files = FixtureSet::File.load_from(path)
-        fixture_files.each { |file| insert_configuration file }
-        fixture_files.map(&:rows).inject(Hash.new, &:merge!).transform_values { |row| ActiveRecord::Fixture.new(row) }
-      end
+        self.model_class ||= fixture_files.map(&:model_class).compact.first&.safe_constantize
 
-      def insert_configuration(file)
-        self.model_class ||= file.model_class&.safe_constantize
+        fixture_files.map(&:rows).inject(Hash.new, &:merge!).transform_values { |row| ActiveRecord::Fixture.new(row) }
       end
   end
 
