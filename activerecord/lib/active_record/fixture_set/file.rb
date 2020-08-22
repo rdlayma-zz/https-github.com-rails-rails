@@ -7,17 +7,9 @@ module ActiveRecord
     class File # :nodoc:
       attr_reader :rows, :model_class
 
-      class CompositeFile
-        attr_reader :model_class, :rows
-
-        def initialize(directory)
-          @rows = []
-
-          loadable_paths_from(directory).each do |path|
-            file = File.new(path)
-            @model_class ||= file.model_class
-            @rows.concat file.rows
-          end
+      class << self
+        def load_composite_from(directory)
+          new loadable_paths_from(directory)
         end
 
         private
@@ -26,14 +18,13 @@ module ActiveRecord
           end
       end
 
-      def self.load_composite_from(directory)
-        CompositeFile.new directory
-      end
-
-      def initialize(file)
-        rows = parse_rows_from(file)
-        @model_class, ignored_fixtures = rows.delete("_fixture")&.values_at("model_class", "ignore")
-        @rows = rows.except!("DEFAULTS", *ignored_fixtures).to_a
+      def initialize(files)
+        @rows = files.each_with_object [] do |file, total_rows|
+          rows = parse_rows_from(file)
+          model_class, ignore = rows.delete("_fixture")&.values_at("model_class", "ignore")
+          @model_class ||= model_class
+          total_rows.concat rows.except!("DEFAULTS", *ignore).to_a
+        end
       end
 
       private
