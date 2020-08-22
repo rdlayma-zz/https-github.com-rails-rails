@@ -457,35 +457,15 @@ module ActiveRecord
   #
   # Any fixtures labeled "_fixture" are safely ignored.
   class FixtureSet
+    autoload :ConnectionCached, "active_record/fixture_set/connection_cached"
+    extend ConnectionCached
+
     #--
     # An instance of FixtureSet is normally stored in a single YAML file and
     # possibly in a folder with the same name.
     #++
 
     MAX_ID = 2**30 - 1
-
-    class SetCache < DelegateClass(Hash) # :nodoc:
-      def initialize
-        @cache = {}
-        super @cache
-      end
-
-      def fetch_multi(set_names, &block)
-        Array(set_names).map(&:to_s).yield_self do |set_names|
-          insert_missing_set_names(set_names, &block)
-          @cache.values_at(*set_names)
-        end
-      end
-
-      private
-        def insert_missing_set_names(set_names)
-          if (missing_set_names = set_names - @cache.keys).any?
-            @cache.merge! yield(missing_set_names).index_by(&:name)
-          end
-        end
-    end
-
-    @@all_cached_fixtures = Hash.new { |h, k| h[k] = SetCache.new }
 
     cattr_accessor :all_loaded_fixtures, default: {}
 
@@ -497,14 +477,6 @@ module ActiveRecord
 
       def fixture_table_name(set_name, config = ActiveRecord::Base) # :nodoc:
         "#{config.table_name_prefix}#{set_name.tr("/", "_")}#{config.table_name_suffix}"
-      end
-
-      def reset_cache
-        @@all_cached_fixtures.clear
-      end
-
-      def cache_for_connection(connection)
-        @@all_cached_fixtures[connection]
       end
 
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
