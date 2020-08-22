@@ -9,16 +9,16 @@ module ActiveRecord
 
       class << self
         def load_composite_from(path)
-          new loadable_paths_from(path)
+          new "#{path}.yml", *namespaced_fixture_paths_from(path)
         end
 
         private
-          def loadable_paths_from(path)
-            [ "#{path}.yml" ] + Dir["#{path}/{*,**}/*.yml"]
+          def namespaced_fixture_paths_from(directory)
+            Dir["#{directory}/{*,**}/*.yml"]
           end
       end
 
-      def initialize(files)
+      def initialize(*files)
         @rows = files.each_with_object [] do |file, total_rows|
           rows = parse_rows_from(file)
           model_class, ignore = rows.delete("_fixture")&.values_at("model_class", "ignore")

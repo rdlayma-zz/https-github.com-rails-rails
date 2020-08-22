@@ -89,12 +89,12 @@ module ActiveRecord
 
       private
         def read_fixture(name)
-          File.new [ ::File.join(FIXTURES_ROOT, "#{name}.yml") ]
+          File.new ::File.join(FIXTURES_ROOT, "#{name}.yml")
         end
 
         def read_yaml(contents = "")
           tmpfile = Tempfile.open("#{rand * 10}.yml") { |f| f.binmode; f << contents }
-          File.new([ tmpfile.path ])
+          File.new(tmpfile.path)
         end
     end
   end
