@@ -41,9 +41,7 @@ class FixturesTest < ActiveRecord::TestCase
   # other_topics fixture should not be included here
   fixtures :topics, :developers, :accounts, :tasks, :categories, :funny_jokes, :binaries, :traffic_lights
 
-  FIXTURES = %w( accounts binaries companies customers
-                 developers developers_projects entrants
-                 movies projects subscribers topics tasks )
+  FIXTURES = %w( accounts binaries companies customers developers entrants movies projects subscribers topics tasks )
   MATCH_ATTRIBUTE_NAME = /[a-zA-Z][-\w]*/
 
   def setup
@@ -974,15 +972,6 @@ class CheckEscapedYamlFixturesTest < ActiveRecord::TestCase
 
   def test_proper_escaped_fixture
     assert_equal "The \\n Aristocrats\nAte the candy\n", funny_jokes(:another_joke).name
-  end
-end
-
-class DevelopersProject; end
-class ManyToManyFixturesWithClassDefined < ActiveRecord::TestCase
-  fixtures :developers_projects
-
-  def test_this_should_run_cleanly
-    assert true
   end
 end
 

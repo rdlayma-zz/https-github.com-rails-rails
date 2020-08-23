@@ -486,12 +486,12 @@ module ActiveRecord
 
     class << self
       def create_fixtures(directory, fixture_set_names, class_names = {}, config = ActiveRecord::Base, &block)
+        class_names = class_names.stringify_keys
+
         # FIXME: Apparently JK uses this.
         connection  = block&.call || ActiveRecord::Base.connection
-        class_names = build_class_names_cache(class_names, config)
-
         cache_for_connection(connection).fetch_multi fixture_set_names do |set_names|
-          set_names.map { |name| load(name, directory, model_class: class_names[name]) }.tap do |sets|
+          set_names.map { |name| load(name, directory, model_class: class_names[name] ||= Configuration.new(name, config).model_class) }.tap do |sets|
             insert sets, connection
           end
         end
@@ -536,18 +536,6 @@ module ActiveRecord
           if conn.respond_to?(:reset_pk_sequence!) # Cap primary key sequences to max(pk).
             sets.each { |set| conn.reset_pk_sequence!(set.table_name) }
           end
-        end
-
-        def build_class_names_cache(class_names, config)
-          class_names.keep_if { |_, klass| active_record?(klass) }.stringify_keys.tap do |hsh|
-            hsh.default_proc = -> (hash, set_name) do
-              hash[set_name] = Configuration.new(set_name, config).model_class.yield_self { |klass| active_record?(klass) ? klass : nil }
-            end
-          end
-        end
-
-        def active_record?(klass)
-          klass && klass < ActiveRecord::Base
         end
     end
 
