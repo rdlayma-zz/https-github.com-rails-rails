@@ -518,10 +518,10 @@ module ActiveRecord
 
       private
         def insert(sets, connection) # :nodoc:
-          sets.group_by { |set| set.model_class&.connection || connection }.each do |conn, sets|
+          sets.group_by { |set| set.model_class&.connection || connection }.each do |conn, grouped_sets|
             table_rows_for_connection = Hash.new { |h, k| h[k] = [] }
 
-            sets.each do |fixture_set|
+            grouped_sets.each do |fixture_set|
               fixture_set.table_rows.each do |table, rows|
                 table_rows_for_connection[table].unshift(*rows)
               end

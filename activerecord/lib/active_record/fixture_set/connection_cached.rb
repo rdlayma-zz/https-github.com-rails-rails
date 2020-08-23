@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveRecord::FixtureSet::ConnectionCached # :nodoc:
   @@all_cached_fixtures = Hash.new { |h, k| h[k] = SetCache.new }
 
@@ -17,9 +19,9 @@ module ActiveRecord::FixtureSet::ConnectionCached # :nodoc:
       end
 
       def fetch_multi(set_names, &block)
-        Array(set_names).map(&:to_s).yield_self do |set_names|
-          insert_missing_set_names(set_names, &block)
-          @cache.values_at(*set_names)
+        Array(set_names).map(&:to_s).yield_self do |keys|
+          insert_missing_set_names(keys, &block)
+          @cache.values_at(*keys)
         end
       end
 
