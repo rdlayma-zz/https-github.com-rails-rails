@@ -528,7 +528,7 @@ module ActiveRecord
             end
 
             conn.insert_fixtures_set(table_rows_for_connection, table_rows_for_connection.keys)
-            reset_connection_after_insertion conn, sets
+            reset_connection_after_insertion conn, grouped_sets
           end
         end
 
