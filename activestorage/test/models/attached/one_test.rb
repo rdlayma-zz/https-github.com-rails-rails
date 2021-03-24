@@ -287,6 +287,7 @@ class ActiveStorage::OneAttachedTest < ActiveSupport::TestCase
   end
 
   test "creating an attachment as part of an autosave association through nested attributes" do
+    puts "USING THIS SERVICE: #{ActiveStorage::Blob.service}"
     group = Group.create!(users_attributes: [{ name: "John", avatar: { io: StringIO.new("STUFF"), filename: "town.jpg", content_type: "image/jpg" } }])
     group.save!
     new_user = User.find_by(name: "John")
