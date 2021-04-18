@@ -322,11 +322,6 @@ module ActiveSupport #:nodoc:
         end
     end
 
-    def unhook!
-      ModuleConstMissing.exclude_from(Module)
-      Loadable.exclude_from(Object)
-    end
-
     def load?
       mechanism == :load
     end
