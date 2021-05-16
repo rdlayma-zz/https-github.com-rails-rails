@@ -29,21 +29,39 @@ module ActionDispatch
     autoload :Session, "action_dispatch/request/session"
     autoload :Utils,   "action_dispatch/request/utils"
 
-    LOCALHOST   = Regexp.union [/^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$/, /^::1$/, /^0:0:0:0:0:0:0:1(%.*)?$/]
+    LOCALHOST = Regexp.union(/\A127\.\d{1,3}\.\d{1,3}\.\d{1,3}\z/, /\A::1\z/, /\A0:0:0:0:0:0:0:1(%.*)?\z/)
 
-    ENV_METHODS = %w[ AUTH_TYPE GATEWAY_INTERFACE
-        PATH_TRANSLATED REMOTE_HOST
-        REMOTE_IDENT REMOTE_USER REMOTE_ADDR
-        SERVER_NAME SERVER_PROTOCOL
-        ORIGINAL_SCRIPT_NAME
+    ENV_METHODS = %w[
+      AUTH_TYPE
+      GATEWAY_INTERFACE
+      ORIGINAL_SCRIPT_NAME
+      PATH_TRANSLATED
 
-        HTTP_ACCEPT HTTP_ACCEPT_CHARSET HTTP_ACCEPT_ENCODING
-        HTTP_ACCEPT_LANGUAGE HTTP_CACHE_CONTROL HTTP_FROM
-        HTTP_NEGOTIATE HTTP_PRAGMA HTTP_CLIENT_IP
-        HTTP_X_FORWARDED_FOR HTTP_ORIGIN HTTP_VERSION
-        HTTP_X_CSRF_TOKEN HTTP_X_REQUEST_ID HTTP_X_FORWARDED_HOST
-        SERVER_ADDR
-        ].freeze
+      REMOTE_ADDR
+      REMOTE_HOST
+      REMOTE_IDENT
+      REMOTE_USER
+
+      SERVER_ADDR
+      SERVER_NAME
+      SERVER_PROTOCOL
+
+      HTTP_ACCEPT
+      HTTP_ACCEPT_CHARSET
+      HTTP_ACCEPT_ENCODING
+      HTTP_ACCEPT_LANGUAGE
+      HTTP_CACHE_CONTROL
+      HTTP_CLIENT_IP
+      HTTP_FROM
+      HTTP_NEGOTIATE
+      HTTP_ORIGIN
+      HTTP_PRAGMA
+      HTTP_VERSION
+      HTTP_X_CSRF_TOKEN
+      HTTP_X_FORWARDED_FOR
+      HTTP_X_FORWARDED_HOST
+      HTTP_X_REQUEST_ID
+    ].freeze
 
     # TODO: Remove SERVER_ADDR when we remove support to Rack 2.1.
     # See https://github.com/rack/rack/commit/c173b188d81ee437b588c1e046a1c9f031dea550
@@ -51,7 +69,7 @@ module ActionDispatch
       class_eval <<-METHOD, __FILE__, __LINE__ + 1
         # frozen_string_literal: true
         def #{env.delete_prefix("HTTP_").downcase}  # def accept_charset
-          get_header "#{env}"                       #   get_header "HTTP_ACCEPT_CHARSET"
+          get_header("#{env}")                      #   get_header("HTTP_ACCEPT_CHARSET")
         end                                         # end
       METHOD
     end
@@ -73,11 +91,11 @@ module ActionDispatch
     def commit_cookie_jar! # :nodoc:
     end
 
-    PASS_NOT_FOUND = Class.new { # :nodoc:
+    PASS_NOT_FOUND = Class.new do # :nodoc:
       def self.action(_); self; end
       def self.call(_); [404, { "X-Cascade" => "pass" }, []]; end
       def self.action_encoding_template(action); false; end
-    }
+    end
 
     def controller_class
       params = path_parameters
@@ -90,7 +108,7 @@ module ActionDispatch
         controller_param = name.underscore
         const_name = controller_param.camelize << "Controller"
         begin
-          ActiveSupport::Dependencies.constantize(const_name)
+          const_name.constantize
         rescue NameError => error
           if error.missing_name == const_name || const_name.start_with?("#{error.missing_name}::")
             raise MissingController.new(error.message, error.name)
@@ -105,9 +123,9 @@ module ActionDispatch
 
     # Returns true if the request has a header matching the given key parameter.
     #
-    #    request.key? :ip_spoofing_check # => true
+    #   request.key?(:ip_spoofing_check) # => true
     def key?(key)
-      has_header? key
+      has_header?(key)
     end
 
     # List of HTTP request methods from the following RFCs:
@@ -133,9 +151,9 @@ module ActionDispatch
     HTTP_METHOD_LOOKUP = {}
 
     # Populate the HTTP method lookup cache.
-    HTTP_METHODS.each { |method|
+    HTTP_METHODS.each do |method|
       HTTP_METHOD_LOOKUP[method] = method.underscore.to_sym
-    }
+    end
 
     alias raw_request_method request_method # :nodoc:
 
@@ -180,7 +198,7 @@ module ActionDispatch
     end
 
     def http_auth_salt
-      get_header "action_dispatch.http_auth_salt"
+      get_header("action_dispatch.http_auth_salt")
     end
 
     def show_exceptions? # :nodoc:
@@ -307,29 +325,29 @@ module ActionDispatch
     # This unique ID is useful for tracing a request from end-to-end as part of logging or debugging.
     # This relies on the Rack variable set by the ActionDispatch::RequestId middleware.
     def request_id
-      get_header ACTION_DISPATCH_REQUEST_ID
+      get_header(ACTION_DISPATCH_REQUEST_ID)
     end
 
     def request_id=(id) # :nodoc:
-      set_header ACTION_DISPATCH_REQUEST_ID, id
+      set_header(ACTION_DISPATCH_REQUEST_ID, id)
     end
 
     alias_method :uuid, :request_id
 
     # Returns the lowercase name of the HTTP server software.
     def server_software
-      (get_header("SERVER_SOFTWARE") && /^([a-zA-Z]+)/ =~ get_header("SERVER_SOFTWARE")) ? $1.downcase : nil
+      (get_header("SERVER_SOFTWARE") && /\A([a-zA-Z]+)/ =~ get_header("SERVER_SOFTWARE")) ? $1.downcase : nil
     end
 
     # Read the request \body. This is useful for web services that need to
     # work with raw requests directly.
     def raw_post
-      unless has_header? "RAW_POST_DATA"
+      unless has_header?("RAW_POST_DATA")
         raw_post_body = body
         set_header("RAW_POST_DATA", raw_post_body.read(content_length))
         raw_post_body.rewind if raw_post_body.respond_to?(:rewind)
       end
-      get_header "RAW_POST_DATA"
+      get_header("RAW_POST_DATA")
     end
 
     # The request body is an IO input stream. If the RAW_POST_DATA environment
@@ -370,11 +388,11 @@ module ActionDispatch
     end
 
     def session=(session) #:nodoc:
-      Session.set self, session
+      Session.set(self, session)
     end
 
     def session_options=(options)
-      Session::Options.set self, options
+      Session::Options.set(self, options)
     end
 
     # Override Rack's GET method to support indifferent access.
@@ -386,7 +404,7 @@ module ActionDispatch
         rack_query_params = Request::Utils.set_binary_encoding(self, rack_query_params, controller, action)
         # Check for non UTF-8 parameter values, which would cause errors later
         Request::Utils.check_param_encoding(rack_query_params)
-        set_header k, Request::Utils.normalize_encode_params(rack_query_params)
+        set_header(k, Request::Utils.normalize_encode_params(rack_query_params))
       end
     rescue Rack::Utils::ParameterTypeError, Rack::Utils::InvalidParameterError => e
       raise ActionController::BadRequest.new("Invalid query parameters: #{e.message}")
